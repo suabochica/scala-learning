@@ -223,6 +223,87 @@ In summary:
 - Before a Scala program is executed, the compiler check that it is well typed.
 - The compiler is usually able to infer the types of the definitions of a program, but you can add them explicitly to improve code readability.
 
+## Methods and Parameters
+
+Lets check how we can applay the same program to different input values by defining methods that get parameters.
+
+Consider that you will build two houses one form Michael and other for Holly. Each house have one door and two windows, however they do not have the same size. And intial approach could be:
+
+```scala
+// Michael's House
+val facade = 5 * 3
+val door = 2 * 1
+val window = 1 * 1
+
+// Holly's House
+val facade = 4 * 4
+val door = 2 * 1
+val window = 1.5 * 1
+```
+
+Note how **similar** these twos programs are.
+
+> Where **similar** functions are carried out by distinct piece of code, it is generally beneficial to combine them into one by abstracting out the **varying** parts. Benjamin C. Pierce
+
+The benefits are:
+- Reduce maintenance: the implementation is centralized in one place.
+- Structures code into abstractions levels.
+
+So for this case, what are the varying parts? Answer, the areas of the windows and facades. We can **abstract out** the facade and windows areas by defining a **method**:
+
+```scala
+val door = 2 * 1
+
+def house(facade: Double, window: Double) =
+    facade - door - window * 2
+```
+
+And then, we can compute the area of each houses in the next way:
+
+```scala
+// Michael's House
+house(5 * 3, 1 * 1)
+
+// Holly's House
+house(4 * 4, 1.5 * 1)
+```
+Below we highlight some keypoints:
+- Methods are introduced by the `def` keyword
+- The method `house` takes two parameters: `facade` and `window`
+- We have to specify the type of method parameters
+
+The body of a method can span several lines:
+
+```scala
+def house(facade: Double, window: Double): Double =
+    val door = 2 * 1
+    val subtractedArea = door + window * 2
+    facade - subtractedArea
+end house
+```
+
+This is useful to introduce intermediate definitions before returning the result.
+
+All the lines with the same *level of identation* make a block. The block end with the resulting expression. The `end` marker is optional but their purpose is only to improve readability
+
+In Scala 2 blocks had to be delimited by braces `{}` and Scala 3 still supports this syntax. Also we can explicit result type.
+
+Another concept to keep in mind is the **lexical scope**. It is worth nothin that name introduced within a block are not visible from the outside of the block. So in the next example:
+
+```scala
+def tenSquared: Int =
+    val ten = 10
+    ten * ten
+
+ten // error: not found: value ten
+```
+
+In summary, parameters allow us to:
+- Implement a program with unknown inputs
+- **apply** the same program to different sets of inputs
+
+**Blocks** let us write intermediate definitions befor returnin a result. Definitions that are inside the block are not visible outside of the block.
+
 ## Variables
 
 For mutable values:
