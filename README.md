@@ -363,22 +363,37 @@ object HelloWorld {
 }
 ```
 
-## If Statements
+## Conditions
+
+Conditions are a way to manage alternative branches of computations. Let us say that we want to show the price of the paint to buy. As long as that price is lower than 100 euros, we shouw it, otherwise we show a message "This is too expensive"
 
 ```scala
-object Demo {
-    def main(args: Array[String]) {
-        val x = 20;
-        var result = "";
+def showPrice(paitingArea: Double, paintPrice: Double): String =
+    val price = paintingArea * paintPrice
 
-        if (x == 20) {
-            result = "x == 20";
-        } else {
-            result = "x != 20";
-        }
+    if price > 100 then
+       "This is too expensive"
+    else
+        price.toString
+```
 
-        println(res)
+An `if` expressions takes a condition followed by the keyword `then`, and has two continuation branches separated by `else`. It it worth nothing that the if/else construct is an expression: it evaluates to a value
 
-        println(if (x != 20) "x == 20" else "x !- 20");
+The conditions must be an expression of type `Boolean`, otherwise it is an error.
+
+In escala two the syntax was a bit different. The conditions was written between parenthesis, and there was no then keyword:
+
+```scala
+// Scalar 2 Syntax
+def showPrice(paintingArea: Double, paintPrice: Double): String {
+    var price = paintingArea * paintPrice;
+
+    if (price > 100) {
+        "This is too expensive";
+    } else {
+        price.toString
     }
 }
+```
+
+In summary, alternative branches of computations can be implemented by using if expressions.
