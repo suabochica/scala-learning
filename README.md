@@ -93,7 +93,7 @@ Scala code runner version 3.1.2 -- Copyright 2002-2022, LAMP/EPFL
 
 ## Elements of Programs
 
-A progras **expresses** a **computation**. For instance: What is the result of adding one to one?
+A program **expresses** a **computation**. For instance: What is the result of adding one to one?
 
 ```
 1 + 1
@@ -397,3 +397,23 @@ def showPrice(paintingArea: Double, paintPrice: Double): String {
 ```
 
 In summary, alternative branches of computations can be implemented by using if expressions.
+
+## Evalauting Definitions
+
+Lets recall a subtle difference between `def` and `val` definitions. It is possilbe to define methods that take no parameters, then what is the difference between those two definitions?
+
+```scala
+val tenSquared = 10 * 10
+def tenSquared = 10 * 10
+```
+
+The difference is that the body of the `def` definitions is evaluated **each time** we use their name. This means that if we never use it, it is neve evaluated.
+
+By contrast, `val` definitions are evaluated **once**, and their result is reused each time their name is used.
+
+So, `def` is accurate to cases for parameterless definitions. A reason to use `def` instead of `val` is to **delay** the evaluation of a computation to a point in the program where we effectively **need** it.
+
+In summary:
+
+- Definitions using `def` are re-evaluated each time they are used. We use them mainly for operations that take parameters.
+- Definitions using `val` are evaluated only once. We use them mainly for itermediate expressions.
