@@ -417,3 +417,39 @@ In summary:
 
 - Definitions using `def` are re-evaluated each time they are used. We use them mainly for operations that take parameters.
 - Definitions using `val` are evaluated only once. We use them mainly for itermediate expressions.
+
+## Domain modeling
+
+To understand the concept of domain modeling, lets consider the next version of the program that computes the area od a house that needs to be painted:
+
+```scala
+val facade = 5 * 3
+val door = 2 * 1
+val window = 1 * 1
+
+facade - door - window - window
+```
+
+Each part of the house, is defiined as a surface which is itself defined in terms of two numbers, a width and a height.
+
+I argue that we –as humans– have to make some cognitive effort to map these numbers to the abstract concept they relate –a shape.
+
+We can say that number are a **low-level** concept, whereas shapes are a **high-level** concept.
+
+Alternatively, here is how we could express our program in terms of _shapes_ and _areas_:
+
+```scala
+val facade = Rectangle(width = 5, height = 3)
+val door = Rectangle(width = 1, height = 2)
+val window = Rectangle(width = 1, height = 1)
+
+facade.area - door.area - window.area - window.area
+```
+
+This version is more readable and less error prone. We will see how to define the `Rectangle` concept.
+
+So, this modeling is a fight to find the right level of abstraction. One could object that doors or windows are more complex than rectangles (e.g., a door is made of some material, it has a handle, etc.) However, **for the purpose of our program** a rectansle seems to carry enough information to a model a door.
+
+> The purpose of abstraction is not to be vague, but to create a new semantic level in which one can be absolutely precise, Edsger W. Dijkstra.
+
+In summarize, the act of defining, in a program, the concept of domain that map closely our human reasoning is called **modeling**.
