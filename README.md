@@ -452,4 +452,65 @@ So, this modeling is a fight to find the right level of abstraction. One could o
 
 > The purpose of abstraction is not to be vague, but to create a new semantic level in which one can be absolutely precise, Edsger W. Dijkstra.
 
-In summarize, the act of defining, in a program, the concept of domain that map closely our human reasoning is called **modeling**.
+To summarize, the act of defining, in a program, the concept of domain that map closely our human reasoning is called **modeling**.
+
+## Case Classes
+
+Lets evaluates a concept that aggregates several concepts together. The concep of a _rectangle_ , which is defined by a _width_ and a _height_, can be modeled as follows in Scala:
+
+```Scala
+case class Rectangle(width: Int, height: Int)
+```
+
+This definitions introduce a **tyoe** and a **constructor**, both named `Rectangle`.
+
+The type `Rectangle` has two members: `width` and `height`. Both members have type `Int`.
+
+The constructor `Rectangle` takes tow parameters: `width` and `height`. We can construct a value of type `Rectangle` as follows:
+
+```Scala
+val facade = Rectangle(5, 3)
+```
+
+and the area of the value can be computed as next:
+
+```Scala
+facade.width * facade.height
+```
+Because computing the area of a rectangle is a common operation in our program, we can define it as an operation of the case class `Rectangle`:
+
+```Scala
+case class Rectangle(width: Int, height: Int)
+    val area = width * height
+```
+
+Note that the area is not part of the information that defines a rectangle. Instead, it is _computed_ from the width and the height of the rectangle. That is why it is defined as an operation rather than a parameter of the case class.
+
+The operations of a class must be defined with a higher lever of indentation than the class itself. Below the complete example of the Rectangle case class:
+
+```Scala
+case class Rectangle(width: Int, height: Int)
+    val area = width * height
+
+val facade = Rectangle(5, 3)
+facade.area
+```
+
+Keep in mind that case classes area immutable. This means that once you construct a `Rectangle` you cannot modify it:
+
+```Scala
+val rectangle = Rectangle(width = 3, height = 4)
+
+rectangle.width = rectangle.width * 2 // Error: Reassignment to val width
+```
+
+In Scala, it is idiomatic to work with **immutable data types**. Case classes come with a handy method to create a copu of an existing values with some fields updated:
+
+```Scala
+val smallRectangle = Rectangle(width = 3, height = 4)
+val largeRectangle = smallRectangle.copy(width = smallRectangle.width * 2)
+```
+
+We will discuss later how to create mutable data types, and what their tradeoffs are.
+
+In summary, a _case class_ aggregates several concepts togehter in a new type, and them define immutable data types.
