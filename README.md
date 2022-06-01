@@ -514,3 +514,71 @@ val largeRectangle = smallRectangle.copy(width = smallRectangle.width * 2)
 We will discuss later how to create mutable data types, and what their tradeoffs are.
 
 In summary, a _case class_ aggregates several concepts togehter in a new type, and them define immutable data types.
+
+## Sealed Traits
+
+Let's learn about the second tool for modeling bussines domains, _sealed traits_.
+
+Case classes **aggregate** several values into a single concept. Conversely, we can define type that **accept** only one of several alternative values.
+
+For instance we can define a type `Shape` that is either a `Rectangle` or a `Circle` as follows:
+
+```scala
+sealed trait Shape
+case class Rectangle(width: Int, heihg: Int) extends Shape
+case class Circle(radius: int) extends Shape
+```
+
+Unlike case class definition, sealed trait definitions do not introduce constructors. We say that traits area **abstract** types.
+
+The only way to construct a value of type `Shape` is to use the constructor of a concrete class that extends `Shape`:
+
+```scala
+val someShape: Shape = Circle(5)
+```
+
+It is worth nothing that a value of type `Rectangle` or `Circle`, is also of type `Shape`.
+
+```scala
+val someRectangle: Rectangle = Rectangle(1, 2)
+val someShape: Shape = someRectangle
+```
+
+We say that types `Rectangle` and `Circle` are **subtypes** of `Shape`. Subtyping is a topic over we will learn more about later.
+
+The type `Shape` has no members. the only (useful) thing we can do with a value of type `Shape` is to recover its concrete type using **match** expression.
+
+```scala
+val someShapeArea =
+    someShape match
+        case Rectangle(width, height) => width * height
+        case Circle(radius) => radius * radius * 3.14
+```
+
+In this example, we define the result of `someShaperArea` by listing all the possible cases of `Shape`.
+
+In case `someShape` is a `Rectangle`, then the result of the `match` expression is `width * height`, where these values are extracted from the underlying rectangle
+
+For other hand, the compiler warns you and provide examples of input that whould fail to be matched by your patterns:
+
+```
+[warn] Match may not be exhaustive
+[warn] It would fail on the following input: _
+```
+
+So far we have shown how to recover a concrete type of a value and to extract its fields. There are ohter things we can do when we match on expressions. Here are two alternative patterns that you might find useful.
+
+```scala
+    someShape match
+        case circle: Circle => s"This is a circle with radius ${circle.radius}"
+        case _ => "This is not circle"
+```
+
+- The **typed pattern** matches only instances of type `Circle` and binds the name `circle` to the matched values.
+- The **wildcard patter** matches everything.
+
+To summarize, a *case class* aggregates several concepts together, whereas a *sealed trait* represents one of seveleral alternatives.
+
+These two building blocks can be used to _model_ bussines domains.
+
+_Match_ expressions can be used to define alternative _branches_ of a program according to the concrete class of a sealed trait, and to _extract_ data from this class at the same time.
