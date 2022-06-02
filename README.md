@@ -582,3 +582,84 @@ To summarize, a *case class* aggregates several concepts together, whereas a *se
 These two building blocks can be used to _model_ bussines domains.
 
 _Match_ expressions can be used to define alternative _branches_ of a program according to the concrete class of a sealed trait, and to _extract_ data from this class at the same time.
+
+## Enumerations
+
+Sometime the alternatice values of a type are not _classes_ of values, but singleton values. Scala 3 provides a special construct for this case:
+
+```scala
+enum PrimaryColor:
+    case Red, Blue, Green
+```
+
+This defines a Prymary color type with exactly three possible values: `PrimaryColor.Red`, `PrimaryColor.Blue` or `PrimaryColor.Green`.
+
+So, we can use **literal patterns** on enumerations:
+
+```scala
+def isProblematicForColorBlindPeople(PrimaryColor): Boolean =
+    color match
+    case PrimaryColor.Red => true
+    case PrimaryColor.Blue => false
+    case PrimaryColor.Green => true
+```
+
+Enumerations provide a `values` operations that enumerate all their possible values:
+
+```scala
+PrimaryColor.values // Array(PrimaryColor.Red, PrimaryColor.Blue, PrimaryColor.Green)
+```
+
+You can find an enumeration value from its String label:
+
+```scala
+PrimaryColor.valueOf("Green") // PrimaryColor = PrimaryColor.Green
+```
+
+If the argument passed is not a valid enumeration label, it is a runtime error.
+
+Something to consider is that an enum definition is just syntactic sugar for a sealed trait an case objects that extend this trait, Is this way how we get Scala 2 compatibility:
+
+```scala
+enum PrimaryColor:
+    case Red, Blue, Green
+```
+Is equivalent to:
+
+```scala
+sealed trait PrimaryColor
+objecr PrimaryColor:
+    case object Red extends PrimaryColor
+    case object Blue extends PrimaryColor
+    case object Green extends PrimaryColor
+    val values = Array(Red, Blue, Green)
+    def valueOf(label: String): PrimaryColor = ...
+```
+
+this code defines:
+- a type `PrimaryColor`, with a fixed number of possible values
+- an **object** `PrimaryColor`, containing the definitions of the values of the type `PrimaryColor`
+- the three possible values, `Red`, `Blue`, and `Green` for `PrimaryColor`
+
+Note that the same name `PrimaryColor` can refer to either a type or a value, depending on where it is used.
+
+It refers to the object `PrimaryColor` when it is used on the right-hand side of a definition, or when it is passed as an argument to an operation:
+
+```scala
+val color = Primary.Green
+isProblematicForColorBlindPeople(PrimaryColor.Green)
+```
+
+It refers to the type `PrimaryColor` when it is used on the right-hand side of a type annotation:
+
+```scala
+val color: PrimaryColor = Primary.Green
+```
+
+A **case object** that extends a _sealed trait_ defines one possible value for that trait.
+
+Unlike a case class, which defines a constructor, a case object **is** already a value.
+
+In summary, `enum` is a convenient construct for modeling a type that has one of several possible singleton values.
+
+An enumeration defines a type and its companion object which in turn defines the possible values of the enumeration, and additional operations such as `values` and `valueOf`.
