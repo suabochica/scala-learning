@@ -663,3 +663,33 @@ Unlike a case class, which defines a constructor, a case object **is** already a
 In summary, `enum` is a convenient construct for modeling a type that has one of several possible singleton values.
 
 An enumeration defines a type and its companion object which in turn defines the possible values of the enumeration, and additional operations such as `values` and `valueOf`.
+
+## Business Logic
+
+Previously were introduced language features such as:
+
+- methods
+- conditions
+- case clases
+- sealed traits
+
+These features are the building blocks for modeling the **business domain** of a program and implementing its **business logic**.
+
+There is no systematic methodology: often, a same set of concepts can be modeled in multiple ways. But, here are some advice:
+
+1. Identify the concepts (in general, nouns) that you are interested in
+2. Identify the relations between them
+  - Does a concept _belong_ to another one? (e.g. a rectangle has a width and a height)
+  - Does a concept _generalize_ to another one? (e.g. a shape can either be a rectangle or a circle)
+3. Translate each concept into a type definition
+    - Concepts belonging to others become **parameters** of case clasess
+    - Concepts generalizing to others become **sealed traits**
+4. Check that you can construct meaningful values from your model
+    - Conversely, check that you can **not** construct nonsensical values form your model
+5. Sometime you need several iterations of domain model an logic implementation to find the right solution.
+
+In summary, reify the concepts (nouns) of a business domain into case clases and sealed tratis.
+
+Check that values derived from your model are valid by construction and that they are meaningful for your problem.
+
+Implement the business logic as operations on your model.

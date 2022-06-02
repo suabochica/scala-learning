@@ -26,5 +26,4 @@ def footprint(experience: Experience): Double =
   energy * megabytes * kgCO2perkWh
 
 footprint(highQualityAndMobile)
-
 footprint(lowQualityAndFixed)
