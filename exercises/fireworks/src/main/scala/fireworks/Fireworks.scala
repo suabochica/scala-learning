@@ -29,16 +29,17 @@ object Firework:
    * by calling the operation `next` on the underlying state type
    * (see e.g., the operation `next` in the class [[Waiting]]).
    *
-   * Hint: choose what to do by pattern matching on the given `firework`.
+   * ✔ Hint: choose what to do by pattern matching on the given `firework`.
    * You will have to use “typed patterns” to match on case classes and
    * “literal patterns” to match on case objects.
    */
   def next(firework: Firework): Firework =
-    fireworks match =
+    firework match {
       case Done => firework
       case waiting: Waiting => waiting.next
       case launched: Launched  => launched.next
       case exploding: Exploding  => exploding.next
+    }
 
 end Firework
 
@@ -60,13 +61,14 @@ case class Waiting(countDown: Int, startPosition: Point, numberOfParticles: Int,
    *
    * Note that we use `def` here instead of `val` to avoid evaluating eagerly all the next states.
    *
-   * Hint: call the method `Launched.init(...)` (with the appropriate arguments) to transition the
+   * ✔ Hint: call the method `Launched.init(...)` (with the appropriate arguments) to transition the
    * firework to the [[Launched]] state.
    */
   def next: Firework =
     if countDown > 0 then
       copy(countDown = countDown - 1)
-    else ???
+    else
+      Launched.init(startPosition, numberOfParticles, particlesColor)
 
 end Waiting
 
@@ -109,12 +111,15 @@ case class Launched(countDown: Int, position: Point, direction: Angle, numberOfP
    *         it moves one step further in its [[direction]] and decrements its [[countDown]] of one unit.
    *         Otherwise, it transitions to the [[Exploding]] state.
    *
-   *         Hints: use the operation [[Motion.movePoint]] to compute the next position of the firework,
+   *         ✔ Hints: use the operation [[Motion.movePoint]] to compute the next position of the firework,
    *         use the operation [[Exploding.init]] to transition the firework to the [[Exploding]] state,
    *         and use the constant [[Settings.propulsionSpeed]] for the speed of the firework.
    */
   def next: Firework =
-    ???
+    if countDown > 0 then
+      copy(countDown = countDown - 1, Motion.movePoint(position, direction, Settings.propulsionSpeed))
+    else
+      Exploding.init(numberOfParticles, direction, position, particlesColor)
 
 end Launched
 
@@ -148,11 +153,14 @@ case class Exploding(countDown: Int, particles: Particles) extends Firework:
    * its [[countDown]].
    * Otherwise, it transitions to the [[Done]] state.
    *
-   * Hint: use the operation [[Particles.next]] to compute the next state of the particles
+   * ✔ Hint: use the operation [[Particles.next]] to compute the next state of the particles
    *       of this firework.
    */
   def next: Firework =
-    ???
+    if countDown > 0 then
+      copy(countDown = countDown - 1, particles = particles.next)
+    else
+      Done
 
 end Exploding
 
@@ -197,18 +205,16 @@ case class Particle(horizontalSpeed: Double, verticalSpeed: Double, position: Po
   def next: Particle =
     // Horizontal speed is only subject to air friction, its next value
     // should be the current value reduced by air friction
-    // Hint: use the operation `Motion.drag`
-    val updatedHorizontalSpeed: Double =
-      ???
+    // ✔ Hint: use the operation `Motion.drag`
+    val updatedHorizontalSpeed: Double = Motion.drag(horizontalSpeed)
     // Vertical speed is subject to both air friction and gravity, its next
     // value should be the current value minus the gravity, then reduced by
     // air friction
-    val updatedVerticalSpeed: Double =
-      ???
+    val updatedVerticalSpeed: Double = Motion.drag(verticalSpeed - Settings.gravity)
     // Particle position is updated according to its new speed
     val updatedPosition = Point(position.x + updatedHorizontalSpeed, position.y + updatedVerticalSpeed)
     // Construct a new particle with the updated position and speed
-    ???
+    Particle(updatedHorizontalSpeed, updatedVerticalSpeed, updatedPosition, color)
 
 end Particle
 
