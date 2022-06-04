@@ -50,3 +50,28 @@ val contactsWithPhone: List[Contact] = addressBook.contacts.filter(contact => co
 To summary, List are one particular **data structure** modeling a collection of elements.
 
 Lists can be manipulated with high-level operations for transforming or filtering their elements.
+
+## Functions
+
+Functions are very much like methods, they have parameters and they return results. For example, the `map` operation takes as parameter a _function_ applied to each element of the list.
+
+```scala
+contacts.map(contact => contact.name)
+```
+
+We pass a _function literal_ as a parameter. In this example, the function takes one parameter, named `contact` and returns the expression `contact.name`.
+
+Below we share some examples of fucntions:
+
+```scala
+val increment: Int => Int =
+    x =>
+        val result = x + 1
+        result
+
+val add =
+    (x: Int, y: Int) => x + y
+
+add(1, increment(2)) // 4
+```
+
