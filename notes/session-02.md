@@ -75,3 +75,83 @@ val add =
 add(1, increment(2)) // 4
 ```
 
+More generally, a value like
+
+```scala
+(t1, t2, ..., tn) => e
+```
+
+Is a function that take `n` parameters, and which returns the expressions `e`.
+
+In case the compiler cannot infer the types of the function arguments, you have to write them explicitly:
+
+```scala
+(t1: T1, t2: T2, ..., tn: Tn) => e
+```
+
+Last, a function is a value, so it has a _function type_. The syntax for function type looks like the syntax for function literals:
+
+```scala
+(t1: T1, t2: T2, ..., tn: Tn) => e
+```
+
+So let's go ahead with the next puzzle: what is the type of the following function?
+
+```scala
+(contact: Contact) => contact.email.endsWith(@sca.la)
+```
+
+The anwser is `Contact => Boolean`.
+
+Now, what is the difference between the following definitions of `increment`?
+
+```scala
+def increment(x: Int): Int = x + 1 // Method
+val increment: Int => Int = x => x + 1 // Function
+```
+
+In both cases, we can call the `increment` like the following:
+
+```scala
+increment(41) // 42
+```
+
+The difference is a bit technical, and come from the fact that Scala supports both; functional programming and object oriented programming.
+
+A key difference is that the second version defines a **value** that can be passes as a parameter or returned as a result.
+
+The runtime creates an object for it in memory.
+
+Calling a function means calling its method `apply`:
+
+```scala
+increment(41) // 42
+// is equivalent to
+increment.apply(41)
+```
+
+When we write `increment(41)`, the compiler rewrites it to `increment.apply(41)`.
+
+Most of the time, you do not need to think about wheter you use a method or a function, because the compiler is able to automatically convert methods into functions when necessary.
+
+for instance, you can write:
+
+```scala
+val xs: List[Int] = List(1, 2, 3)
+def increment(x: Int): Int = x + 1
+xs.map(increment) // = List(2, 3, 4)
+```
+
+Here, the compiler sees that the operation `map` expects a function, so it converts the method `increment` into a function value.
+
+In summary, function van be used as values.
+
+You can define a function with the arrow syntax: `(x: Int)=> x + 1`.
+
+A function that takes a parameter of type `A` and returns a result of type `B` is a value of type `A => B`, whihc has an `apply` method:
+
+```scala
+def apply(a: A): B
+```
+
+Calling the function means calling its `apply` method.
