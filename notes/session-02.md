@@ -155,3 +155,30 @@ def apply(a: A): B
 ```
 
 Calling the function means calling its `apply` method.
+
+### Short syntax for function
+
+Functions whose body use their arguments exactly once do not need to name them. Instead, you can use a placeholder represented by the character underscore `_`.
+
+For instance:
+
+```scala
+val increment: Int => Int = x => x + 1
+// is equivalent to
+val increment = (_: Int) + 1
+```
+
+The placeholder syntax also works with multiple parameters:
+
+```scala
+val add: (Int, Int) => Int = (x1, x2) => x1 + x2
+// is equivalent to
+val add: (Int, Int) => Int = _ + _
+```
+
+However, there is a warning because the underscore `_` is also used to idicate a wildcard argument. Wildcard argument should not be confused with the placeholder syntax. The difference between them is that wilcard arguments are followed by an arrow `=>`:
+
+```scala
+val placeholder = (_: Int) + 1
+val wildcard = (_: Int) => 42
+```
