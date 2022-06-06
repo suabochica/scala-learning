@@ -182,3 +182,120 @@ However, there is a warning because the underscore `_` is also used to idicate a
 val placeholder = (_: Int) + 1
 val wildcard = (_: Int) => 42
 ```
+
+## More Operations on List
+
+In the previous section we have seen how to construct lists and how to do some basic operations with them.
+
+In this section we will cover:
+
+- how to insert an element into a list
+- how to access to one particular element of a list
+- what is the data layout of lists
+- how the data layout impact the way we work with lists
+
+A `List` is:
+
+- the empty list `Nil` or
+- a pair containing a head element and a tail that is a `List`
+
+The lists in Scalara are **immutable**: once you create a list, you cannot change its elements.
+
+If you want a different list, you have to create another one. Let's see how to work with them, considering the next list of contact with Pam and Jim.
+
+
+```scala
+val contacts1 = List(pam, jim)
+```
+
+We can create another list wiht Michael, Pam, and Jim like so:
+
+```scala
+val contacts2 = michael :: contacts1
+```
+
+We have not changed the list `contacts1`. Instead, we have constructed a new list, `contacts2`, whose head element is `carol` and whose tail list is `contacts1`.
+
+Constructing a new list by prepending an element to an existing list is a constant-time operation (i.e. we do not copy the tail list, we just **reuse** it).
+
+This type of data structures is also called **persistent data structures** because we never change the previous state of a list.
+
+Another perspective is that calling the `List` constructor with several elements is equivalent to prepending these elements to the empty list `Nil`:
+
+```scala
+List(pam, jim) == pam :: jim :: Nil
+```
+
+Note that the `::` operator is **right-associative**:
+
+```scala
+pam :: jim :: Nil == (pam :: (jim :: Nil))
+pam :: jim :: Nil == Nil == Nil.::(jim).::(pam)
+```
+
+More generally, operators that end with `:` are right associative. This contrast with other operator such `+`
+
+```scala
+0 + 1 + 2 == ((0 + 1) + 2) == 0.+(1).+(2)
+```
+
+Conversely, we can decompose a list into its head and tail by using _pattern matching_.
+
+For instance, here is a program that prints the name of the first contact of an adress book:
+
+```scala
+addressBook.contacts match
+    case contact :: tail => println(contact.name)
+    case Nil => println("No contacts")
+```
+
+Decomposing a list into its head an tail is symmetrical to constructing a list from a head and a tail.
+
+```scala
+val addressBook = AddressBook(pam :: bob :: Nil)
+
+addressBook.contacts match
+    case first :: second :: Nil => println(second.name)
+    case _ => println("Unexpected number of contacts")
+```
+
+We use the **wildcard pattern**" `_` to mathc an empty list of contacts, a list of exactly one contact, and a list with more than two contacts.
+
+Here is what the compiler would tell us if we wrote `case Nil` instead of `case _`
+
+```scala
+addressBook.contacts match
+    case first :: second :: Nil => println(second.name)
+    case Nil println("Unexpected number of contacts")
+
+// waring: match may not be exhaustive
+
+// It would fail on pattern case List(_, _, _, _, *), List(_)
+```
+
+To access the elements of a list we use its operations `head`, `tail`, or random access:
+
+```scala
+val fruits = List("apples", "oranges", "pears")
+
+fruits.head == "apples"
+fruits.tail == List("oranges", "pears")
+fruits.tail.head == "oranges"
+fruits(0) == "apples"
+fruits(2) == "pears"
+```
+
+This operations raise an **error** if you try to access the head or the tail of an empty list, or if you use an index that is out of the bounds of the list.
+
+For other side, the randoms access is not efficient on list.
+
+
+| Operation     | Complexity    |
+| ------------- | ------------- |
+| ::            | Constant time |
+| head          | Constant time |
+| tail          | Constant time |
+| random access | Linear time   |
+| size          | Linear time   |
+
+To summarize, lists are linear immutable sequences. They can be constructed and decomposed with the `::` operator. They are not optimized for random access but support efficiend `head` and `tail` decomposition.
