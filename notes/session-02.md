@@ -299,3 +299,21 @@ For other side, the randoms access is not efficient on list.
 | size          | Linear time   |
 
 To summarize, lists are linear immutable sequences. They can be constructed and decomposed with the `::` operator. They are not optimized for random access but support efficiend `head` and `tail` decomposition.
+
+## Introducing Collections
+
+We have already met the `List` collection. We will now learn about another collection types, In particular how to:
+
+- construct;
+- query; and
+- transform
+
+collections.
+
+We will learn about specific features of sequence and maps.
+
+We will also ecounter tuples and `Option`, wich are not part of the collection classes but are very usefull.
+
+// TODO:
+
+We started our introduction to collection by looking at three examples of collections types: `List`, `ArrayBuffer`, and `Map` and learned about the packages in which they are found.
