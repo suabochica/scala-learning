@@ -314,6 +314,35 @@ We will learn about specific features of sequence and maps.
 
 We will also ecounter tuples and `Option`, wich are not part of the collection classes but are very usefull.
 
-// TODO:
+> Note: the collection library is large. We will only cover the most common cases.
+
+Let's use three different collections types to illustrate commonality and difference between collections:
+
+- `List`, which is an immutable sequence;
+- `ArrayBuffer`, which is an mutable sequence;
+- `Map`, which is an immutable dictionary.
+
+A dictionary is also known as a _map_, _hash table_, or _associative array_. It is a datastructure that allows us to store and retrieve values by key. For example, we could store user keyed by their user id, and then quickly retrieve a user given an id.
+
+Collections live in the `scala.collection` package:
+
+- `scala.collection.immutable` for the immutable collections; and
+- `scala.collection.mutable` for the mutable collections.
+
+By default mos of the immutable collection are already available to use. However we need to impor the mutable collections before we can use them.
+
+A common practice is to import the `mutable` package directly.
+
+```scala
+import scala.collection.mutable
+```
+
+then we refer to definitions by prefixing them with the packages.
+
+```scala
+val buffer = mutable.ArrayBuffer()
+```
+
+This convention makes it clear when we are creating a mutable collection.
 
 We started our introduction to collection by looking at three examples of collections types: `List`, `ArrayBuffer`, and `Map` and learned about the packages in which they are found.
