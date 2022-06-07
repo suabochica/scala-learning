@@ -346,3 +346,30 @@ val buffer = mutable.ArrayBuffer()
 This convention makes it clear when we are creating a mutable collection.
 
 We started our introduction to collection by looking at three examples of collections types: `List`, `ArrayBuffer`, and `Map` and learned about the packages in which they are found.
+
+## Constructing Collections
+
+In this section we will learn some of the many ways that can be used to construct collections.
+
+// empty collection
+
+// varargs
+
+// tuples
+
+// tuple patterns
+
+// accessing tuple elements
+
+// prepending and appending elements
+
+// updating a map
+
+To recap, we have seen the following methods to construct collections:
+
+- `empty` to construct an empty collection;
+- the `varags` contructor;
+- `+:` and `:+` to prepend and append elements to sequences; and
+- `+` to add an element to a map.
+
+We also learned about tuples
