@@ -447,3 +447,48 @@ To recap, we have seen the following methods to construct collections:
 
 We also learned about tuples.
 
+## Querying Collections
+
+Several methods allow us to query simple properties of a collection, such as the number of elements it contains.
+
+| Operation               | Description                                  |
+| ----------------------- | -------------------------------------------- |
+| xs.size                 | Number of elements of the collections xs     |
+| xs.isEmpty, xs.nonEmpty | Is the collection xs empty, or not?          |
+| xs.contains(x)          | Does the collection xs contain the elemen x? |
+
+Sometimes we want to find the first or all the elements in a collection that satisfy a predicate. For this we can use the `find` and `filter` methods respectively
+
+```scala
+val data = List(1, 2, 3, 4)
+
+data.find(x => x % 2 == 0) // Some(2)
+data.filter(x => x % 2 == 0) // List(2, 4)
+```
+
+We will learn all about `Option` soon. For now we need to know that `Options` is a special collection that contains zero or one element. Thus it can represent "optional" value; a value that might be missing.
+
+There are two cases to `Option`:
+
+- `Some` when there is a value; and
+- `None` otherwise.
+
+When we call `find` it will return the `Some` case of the `Option` if a value is found.
+
+```scala
+List(1, 2, 3, 4).find(x => x == 1) // Some(1)
+```
+
+If no value is found the `None` case is returned.
+
+```scala
+List(1, 2, 3, 4).find(x => x == 5) // None
+```
+
+We have seen the following methods to query properties of a collection
+
+- `size` to get the number of elements in a collections;
+- `isEmpty` and `nonEmpty` to determine if a collection contain elements;
+- `contains` to test if a collection contains an element;
+- `find` to return the first element that matches a predicate;
+- `filter` to return all the element that match a predicate;
