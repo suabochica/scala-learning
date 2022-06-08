@@ -351,19 +351,92 @@ We started our introduction to collection by looking at three examples of collec
 
 In this section we will learn some of the many ways that can be used to construct collections.
 
-// empty collection
+The simplest example is an empty collections. Let's construct one.
 
-// varargs
+```scala
+List.empty // List[Nothing]
+mutable.ArrayBuffer.empty // ArrayBuffer[Nothing]
+Map.empty // Map[Nothing, Nothing]
+```
 
-// tuples
+Scala inferred the type of the element of our collections as `Nothing`. This is not recomendable, instead we can specify the type:
 
-// tuple patterns
+```scala
+List.empty[Int] // List[Int]
+mutable.ArrayBuffer.empty[Double] // ArrayBuffer[Double]
+Map.empty[String, Boolean] // Map[String, Boolean]
+```
 
-// accessing tuple elements
+Constructing empty collections is not always usefull. There is a constructor to create a cllection with an arbitrary number of elements. We have already seen this for `List`
 
-// prepending and appending elements
+```scala
+List(1, 2, 3, 4)
+```
 
-// updating a map
+It works for `ArrayBuffer`as well
+
+```scala
+mutable.ArrayBuffer("a", "b", "c", "d")
+```
+
+This is sometimes known as a _vararg_ constructor, because we can pass a variable number of arguments to it.
+
+To use the vargarg constructor for `Map` we must pass both keys and values.
+
+```scala
+Map("a" -> true, "e" -> true, "b" -> false)
+```
+
+This creates a map with the key "a" associated with the value `true` and the key "b" associated with the value `false`.
+
+The syntax `a -> b` constructs a _tuple_. Let's take a quick look at tuples before move on.
+
+A typle is a collection of _fixed size_  bu the values in the collection may have _different types_. In contrast collectinos like `List` can hold a variable number of elements but each element must have the same type.
+
+The syntax `a -> b` constructs a tuple with two elements. It is a shorthand for writing (a, b), which is the general syntax for constructing tuples. For tuples of three or more elements we must surround the values wiht parentheses and have commas between them. Here are some examples.
+
+```scala
+val pair1: (String, Int) = "Alice" -> 42
+val pair2: (String, Int) = ("Alice" -> 42)
+val tuple: (Int, String, Boolean() = (42, "foo", true)
+```
+
+More generally, a typle type (T1, T2, ..., Tn) is a type containing n elements of type T1, T2, ..., and Tn, respectively.
+
+We now know how to construct types. Let's look at how we get values of them. A pattern mathc is the easiest way to deconstruct a tuple.
+
+```scala
+(10.0, "Hello") match
+    case (number, greeting) => s"$greeting! the numer is $number"
+```
+
+We can use a pattern in `val`, which is another convenient way to desconstruct a tuple.
+
+```scala
+val (x, y) = (10.0, 20.0)
+x // 10.0
+y // 20.0
+```
+We can also directly access element of a tuple by index. To do so we call a tuple as if it was a function, passing the index of the elements as a parameter. Indices start at 0.
+
+```scala
+val pair = ("Alice", 42)
+pair(0) // : String = "Alice"
+pair(1) // : Int = 42
+```
+
+If we already have a sequence we can prepend and append individual element using the `+:` and `:+` methods.
+
+```scala
+0 +: List(1, 2, 3) // List(0, 1, 2, 3)
+mutable.ArrayBuffer("a", "b") :+ "c"// ArrayBuffer("a", "b", "c")
+```
+
+We cannot call `+:` and `:+` on `Map` because it does not store values in any particular order. Instead, we can add an element using the + method.
+
+```scala
+Map("a" -> true) + ("e" -> true) // Map(a -> true, e -> true)
+```
 
 To recap, we have seen the following methods to construct collections:
 
@@ -372,4 +445,5 @@ To recap, we have seen the following methods to construct collections:
 - `+:` and `:+` to prepend and append elements to sequences; and
 - `+` to add an element to a map.
 
-We also learned about tuples
+We also learned about tuples.
+
