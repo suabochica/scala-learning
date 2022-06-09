@@ -492,3 +492,184 @@ We have seen the following methods to query properties of a collection
 - `contains` to test if a collection contains an element;
 - `find` to return the first element that matches a predicate;
 - `filter` to return all the element that match a predicate;
+
+## Transforming collections
+
+In this section we will learn about a handful methods that allow us to transform the elements of a collection to produce a new collection, or, in the case of `foldLeft`, anything all.
+
+Using `map` we can transform every element into a new element. The new element can have the same or different type.
+
+```scala
+val list = List(1, 2, 3, 4)
+list.map(x => x + 1) // List(2, 3, 4, 5)
+
+val buff = mutable.ArrayBuffer(1, 2, 3, 4)
+buff.map(x => x % 2 == 0) // mutable.ArrayBuffer(false, true, false, true)
+
+val map = Map(0 -> "No", 1 -> "Yes")
+map.map.((key, value) => key -> (value * 2)) // Map(0 -> NoNo, 1 -> YesYes)
+```
+
+> Note: adter calling `map` the number of elements is unchanged. For sequences the order is also unchanged.
+
+We can also transform a collection with `flatMap`, which allows us to change the number of elements in the collection.
+
+```scala
+// Remove all the elements
+List(1, 2, 3).flatMap(x => List())
+
+// Double the number of elements
+mutable.ArrayBuffer(1, 2).flatMap(x => mutable.ArrayBuffer(x, x * 2))
+
+// Keep the number of elements the same but change type
+Map(0 -> "zero", 1 -> "one").flatMap((key, _) =>
+    Map(key.toString -> key)
+)
+```
+
+So let's implement a program that return all the phone numbers of a contact list to check the differences between `map` and `flatMap`
+
+```scala
+case class Contact(name: String, phoneNumbers: List[String])
+val contacts: List[Contact] = ...
+```
+
+First attempt
+
+```scala
+val allPhoneNumbers = contacts.map(contact => contact.phoneNumbers)
+// allPhoneNumbers = List(List(), List("+41787828420"))
+```
+
+We get back a `List[List[String]]`, but ideally we would like to flatten the nested list at the top-level. We can do so with the `flatMap` operation:
+
+```scala
+val allPhoneNumbers = contacts.flatMap(contact => contact.phoneNumbers)
+// allPhoneNumbers = List("+41787828420")
+```
+
+The `folfLeft` methods allow us to transform a collection into _anything_ else. Let's see some examples.
+
+```scala
+// Sum the elements of the list (in practice we would use the sum method)
+List(1, 2, 3).foldLeft(0)((accumulator, element) => accumulator + element) // 6
+
+// Reverse the list (in practice we would use the reverse method)
+List(1, 2, 3).foldLeft(List.empty[Int])((accumulator, element) => 
+    element +: accumulator
+) // List(3, 2, 1)
+
+// True if the last element is even or the list is empty
+List(1, 2, 3).foldLeft(true)((accumulator, element) => element % 2 == 0)
+```
+
+// multiple parameters lists
+The method `foldLeft` has two parameters lists.
+
+Generally, methods can have more than one parameter list.
+
+```scala
+def foo(x: Int, y: Int)(f: Int => Int): Int
+```
+
+We call it as follow:
+
+```scala
+foo(0, 10)(i => i * i)
+```
+
+// understanding foldLeft
+The understanding of `foldLeft` could be clearer from two ways. Let's start with this example:
+
+```scala
+// Sum the elements of the list (in practice we would use the sum method)
+List(1, 2, 3).foldLeft(0)((accumulator, element) => accumulator + element) // 6
+```
+
+We can think of the first argument `0`, as an accumulator. The accumulator is the value we have computed over the portion of the list we have seen so far. The initial value of the accumulator is `0`, meaning the sum of the empty list is `0`.
+
+The second argument, the function, is how we combine the accumulator with the current element of the list to create a new accumulator. In this example we add the element to the accumulator. Since the accumulator is the sum so far, the result will be the sum of all the elements.
+
+Here is the second way of understanding `foldLeft`. We will se that `foldLeft` processes the list in the reverse order to which it is constructed, and we use the initial value of the accumulator at the start instedd of `Nil` at the end.
+
+Let's start with
+
+```scala
+val data = List(1, 2, 3)
+```
+
+Remember that we can write this list as
+
+```scala
+val data = 1 :: 2 :: 3 :: `Nil`
+```
+
+List are constructed from right to left. Bracket make this explicit.
+
+```scala
+val data = 1 :: (2 :: (3 :: `Nil`))
+```
+
+`foldLeft` processes the list from left to right, which is opposite to the construction order. Let's define a function `add`.
+
+```scala
+val add = (x: Int, y: Int) => x + y
+```
+
+Then
+
+```scala
+(1 :: 2 :: 3 :: Nil).foldLeft(0)(add)
+```
+
+is equivalent to
+
+```scala
+add(add(add(0, 1), 2), 3)
+```
+
+Notice that `foldLeft` goes from left-to-right, and insted of the list finishing with `Nil`, `foldLeft` starts with the initial accumulator `0`.
+
+We can extend this way of understanding `foldLeft` to the general case:
+
+```scala
+xs.foldLeft(z)(f) == f(f(f(f(z, xs(0)), xs(1)), ...), xs(n - 1))
+```
+
+In words it says we start at the left of the list, combining the initial element with the accumulator, and then proceed from left to right combining partial results with the next element we encounter.
+
+The explanations above both used `List`. We can generalize to any collection by assuming (possibly arbitrary) ordering on the elements. For example, we could write
+
+```scala
+mutable.ArrayBuffer(1, 2, 3)
+```
+
+as
+
+```scala
+1 +: 2 +: 3+: mutable.ArrayBuffer.emty[Int]
+```
+
+and then the second explanation of `foldLeft` can be transferred to `ArrayBuffer`.
+
+`groupBy` groups elements of a collection according to a partition function. For instance, to group email addresses by domains:
+
+```scala
+val emails = List("pam@sca.la", "jim@sca.la", "michael@the.off")
+
+val domain: String => String =
+    email => email.dropWhile(c => c != '@').drop(1)
+
+val emailsByDomain = emails.groupBy(domain)
+// emailsByDomain: Map[String, List[String]] = Map(
+//    "sca.la" -> List("pam@sca.la", "jim@sca.la")
+//    "the.off" -> List("michael@the.off")
+//)
+```
+
+In summary, below are the methods for transforming collections:
+
+- `map` for transforming elements while keeping the general structure of the collection;
+- `flatMap` for transforming elements and possibly transforming some part of the structure of the collection; and
+- `foldLeft` for transforming a collection in any way; and
+- `groupBy` for grouping elements by a partition function.
