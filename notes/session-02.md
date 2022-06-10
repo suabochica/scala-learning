@@ -493,7 +493,7 @@ We have seen the following methods to query properties of a collection
 - `find` to return the first element that matches a predicate;
 - `filter` to return all the element that match a predicate;
 
-## Transforming collections
+## Transforming Collections
 
 In this section we will learn about a handful methods that allow us to transform the elements of a collection to produce a new collection, or, in the case of `foldLeft`, anything all.
 
@@ -673,3 +673,19 @@ In summary, below are the methods for transforming collections:
 - `flatMap` for transforming elements and possibly transforming some part of the structure of the collection; and
 - `foldLeft` for transforming a collection in any way; and
 - `groupBy` for grouping elements by a partition function.
+
+## Sequences and Maps
+
+In this section we will learn about two broad group of collections – sequences and maps – and features that are specific to each group.
+
+Some collections are sequences, which means the collection's elements have a defined ordering, usually the order in whihc they are inserted into the collection.
+
+`List` and `ArrayBuffer` are sequences. `Map` is not.
+
+
+We have learned that sequences are collections whose elements have a defined order. We saw that:
+
+- we can access the first and remainder of the sequence with `head` and `tail`.
+- we can sort a sequence using `sortBy`
+- some sequences are linear, meaning the time to access an element is proportional to how far it is from the start, and some are indexed, meaning all elements take the same time to access.
+- We also learned that maps have method `get` to access values by key.
