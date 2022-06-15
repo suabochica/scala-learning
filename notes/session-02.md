@@ -682,6 +682,23 @@ Some collections are sequences, which means the collection's elements have a def
 
 `List` and `ArrayBuffer` are sequences. `Map` is not.
 
+With a sequence we can get the first element of the sequence – the `head` – and the rest of the sequence – the `tail` –
+
+```scala
+val data = mutable.ArrayBuffer(1, 2, 3)
+data.head //1
+data.tail // ArrayBuffer(2, 3)
+```
+
+> Note: if the sequence is empty we will get an exception when we use `head` or `tail`.
+
+List are _linear sequences_: accessing the nth element requires iterating through the first n - 1 elements. So, accessing the element at index n is an O(n) operation.
+
+Array buffers are _indexed_ sequences: accessing an element at any index takes the same time and therefore is an O(1) operation.
+
+Both data structures have pros an cons. It is your responsibility to choose the right data structure according to your needs! 
+
+// sorting
 
 We have learned that sequences are collections whose elements have a defined order. We saw that:
 
