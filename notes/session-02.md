@@ -698,7 +698,31 @@ Array buffers are _indexed_ sequences: accessing an element at any index takes t
 
 Both data structures have pros an cons. It is your responsibility to choose the right data structure according to your needs! 
 
-// sorting
+Use the method `sortBy` to sort sequences.
+
+```scala
+val data = List(
+    "Alice" -> 42,
+    "Bob" -> 30,
+    "Werner" -> 77,
+    "Owl" -> 6,
+)
+
+data.sortBy((_, age) => age)
+// List[(String, Int)] = List((Owl, 6), (Bob, 30), (Alice, 42), (Werner, 77))
+
+data.sortBy((name, _) => name)
+// List[(String, Int)] = List((Alice, 42), (Bob, 30), (Owl, 6), (Werner, 77))
+```
+
+`get` is the most important mehtod on `Map` that we have not yet explorer. It allow us to get the element associated with a key.
+
+```scala
+val data = Map("a" -> 0, "b" -> 1, "c" -> 2)  
+data.get("a") // Some(0)
+data.get("z") // None
+```
+> Note: `get` return an `Option` as there may not be an element associated with the key.
 
 We have learned that sequences are collections whose elements have a defined order. We saw that:
 
