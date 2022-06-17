@@ -563,7 +563,6 @@ List(1, 2, 3).foldLeft(List.empty[Int])((accumulator, element) =>
 List(1, 2, 3).foldLeft(true)((accumulator, element) => element % 2 == 0)
 ```
 
-// multiple parameters lists
 The method `foldLeft` has two parameters lists.
 
 Generally, methods can have more than one parameter list.
@@ -730,3 +729,26 @@ We have learned that sequences are collections whose elements have a defined ord
 - we can sort a sequence using `sortBy`
 - some sequences are linear, meaning the time to access an element is proportional to how far it is from the start, and some are indexed, meaning all elements take the same time to access.
 - We also learned that maps have method `get` to access values by key.
+
+## Option
+
+The special case of collection that has at most one element is named `Option`.
+
+Like the collections, the type `Option` is parameterized bythe type of element:
+
+- `Option[Int]` is the type of an optional integer value
+- `Option[Boolean]` is the type of an optional boolean value
+
+An optional value can either be `None` (absence of value), or `Some(value)`.
+
+Optional values have similar operations as collections (`map`, `filter`, `flatMap`, `foldLeft`, `isEmpty`, `contains`, etc.).
+
+// Example Optional Email
+
+// Operations on Option
+
+// Operations Returning Optional Results
+
+// null
+
+To summarize, the type `Option` models optional values. A value of type `Option[A]` can either be `None`, or `Some(a: A)`. Some collections operations return optional values (e.g., `find`, `headOption`).
