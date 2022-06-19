@@ -743,12 +743,65 @@ An optional value can either be `None` (absence of value), or `Some(value)`.
 
 Optional values have similar operations as collections (`map`, `filter`, `flatMap`, `foldLeft`, `isEmpty`, `contains`, etc.).
 
-// Example Optional Email
+Let us revisit the contact data type and make the `email` field optional:
 
-// Operations on Option
+```scala
+case class Contact(
+    name: String,
+    maybeEmail: Option[String],
+    phoneNumbers: List[String]
+)
 
-// Operations Returning Optional Results
+val pam = Contact("Pam", Some("pam@sca.la"),  List())
+val jim = Contact("Jim", None,  List("+417878829420"))
+```
 
-// null
+> Note: it is common in practice to prefix identifiers of optional value wiht "maybe" as in `maybeEmail`.
+
+We can also pattern match on option as shown the next snippet:
+
+```scala
+def hasDotLaEmail(contact: Contact): Boolean =
+    contact.maybeEmail match
+        case Some(email) => email.endsWith("@sca.la")
+        case None => false
+```
+The operation `map` transforms the element in the option with the given function. The operation `getOrElse` returns the optional value, if it is defined, or falls back to a given value.
+
+```scala
+def emailLength(contact: Contact) : Int =
+    contact.maybeEmail
+        .map(email => email.size)
+        .getOrElese(0)
+```
+
+The operation `zip` combines two optional values into a single optional value containing a pair. The resulting value is defined only if the two original optional values were defined.
+
+```scala
+val maybePamAndJimEmails: Options[(String, String)] =
+    pam.maybeEmail.zip(jim.maybeEmail)
+```
+
+We have already seen that the opration `find` on collections returns `None` in case no elments were found.
+
+Another example is the operation `headOption` on `List` that optionally returns the first element of the list if the list is not empty.
+
+```scala
+def sendNotification(contact: Contact, message: String): Unit =
+    contact.phoneNumbers.headOption match
+        case Some(number) => sendSms(number, message)
+        case None =>
+            contact.maybeEmail match
+                case Some(email) => sendEmail(email, message)
+                case None => ()
+```
+
+In some programming languages, the value `null` (or equivalent) is used to model optional values. However, it is now largely admitted that this is bad practice:
+
+- [Null References The Billion Dolar Mistake](https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare/)
+
+In Scala, there is a `null` value, but is here mostly fo interoperability with Java. We recommend modeling optional values with the type `Option` instead.
 
 To summarize, the type `Option` models optional values. A value of type `Option[A]` can either be `None`, or `Some(a: A)`. Some collections operations return optional values (e.g., `find`, `headOption`).
+
+// ✅  🚧  🛑
