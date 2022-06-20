@@ -804,4 +804,113 @@ In Scala, there is a `null` value, but is here mostly fo interoperability with J
 
 To summarize, the type `Option` models optional values. A value of type `Option[A]` can either be `None`, or `Some(a: A)`. Some collections operations return optional values (e.g., `find`, `headOption`).
 
+## ✅ Introducing Loops
+Let's check different ways to write loops. Most algorithms involve some kind of loops.
+
+For instance, sorting a sequence requires iterating on its elements until ther are sorted.
+
+Finding the shortest path between two points in a graph requires iterating on the graph nodes and edges until the destination is reached.
+
+In this section we will present several ways of performing loops:
+
+- iterating on the standard collecitions,
+- _imperative loops_ with the controls structure `while`, 
+- _functional loops_ with recursion
+
+Depending on the situation, some ways are more convenient than others.
+
+Let's introduce the loop concept with the factorial of a positive integer where given a `n` the factorial is the product of all positive integers less than or equal o `n`:
+
+```scala
+def factorial(n: Int): Int =
+    1 * 2 * ... * (n - 2) * (n - 1) * n 
+```
+We have already seen that the Scala collections have operations that iterate on all their elements. The most general one is `foldLeft`. we can implement `factorial` with `foldLeft` as follows:
+
+```scala
+def factorial(n: Int): Int =
+    (1 to n).foldLeft(1)((result, x) => result * x)
+```
+
+First, we create a collection of numbers from 1 to n, then we compute the product of all these numbers.
+
+> Note: There is also an operation `product`:
+
+```scala
+def factorial(n: Int): Int = (1 to n).product
+
+```
+
+`Range` is another type of Scala that models a range of values. Here are some self-explanatory examples:
+
+```
+1 to 4 // 1, 2, 3, 4
+0 to 10 by 2 // 0, 2, 4, 6, 8, 10
+5 until 0 by -1 // 5, 4, 3, 2, 1
+```
+
+The operations `to` and `until` are regular operations on type `Int`:
+
+```
+1.to(4) // : Range
+```
+
+Ranges have the opeartions of sequnces, such as `map`, `filter`, etc.
+
+Another way of doing loops consists in using the `while` control flow statement:
+
+```scala
+def factorial(n: Int): Int =
+    var acc = 1
+    var i = 1
+
+    while i < n do
+        i = i + 1
+        acc = acc + i
+    acc
+```
+
+The keyword `var` introduces a variable definition. Unlike `val` definitions, `var` definitions can be **re-assigned** a new right-hand side over time.
+
+The general syntax for the `while` control flow statement is:
+
+```scala
+while <condition> do <statement>
+
+while <condition> { <statement> } // Scala 2 Syntax
+```
+
+Last, another way of doing loops is to use _recursive functions_. Recursive functions are functions defined in terms of themselves:
+
+```scala
+def factorial(n: Int): Int =
+    if n == 0 then 1
+    else n * factorial(n - 1)
+```
+Here, `factorial(n)` is defined in terms of `factorial(n - 1)`, which is defined in terms of `factorial(n - 2)`, and so on untl we reach `factorial(0)`, which terminates the loop.
+
+Let's look at the evaluation steps of the expression `factoria(3)`:
+
+```
+- 3 * factorial(3 - 1)
+- 3 * 2 * factorial(2 - 1)
+- 3 * 2 * 1 * factorial(1 - 1)
+- 3 * 2 * 1 * 1
+- 6
+```
+
+In summary, looping can be achieved with several approaches:
+
+- iterating on collections,
+- `while` control-flow statements,
+- recursive functions.
+
+Let's see how theses approaches compare in different situations.
+
+## 🚧 Loop Examples
+
+## 🛑 Tail Recusrion
+
+## 🛑 "for" Syntax
+
 // ✅  🚧  🛑
