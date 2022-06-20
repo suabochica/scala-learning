@@ -899,15 +899,23 @@ Let's look at the evaluation steps of the expression `factoria(3)`:
 - 6
 ```
 
+`List` is a recursive type: a `tail` is itself a `List`.
+
+This pattern is **structural recursion**. Generally, recursive data types area esasy to process with strcuturally recursive algorithms.
+
 In summary, looping can be achieved with several approaches:
 
 - iterating on collections,
 - `while` control-flow statements,
 - recursive functions.
 
-Let's see how theses approaches compare in different situations.
+Several styles of loops are possible.
 
-## 🚧 Loop Examples
+Often exploring the solution space of a problem is easy to express with the existing collections operations.
+
+Generally, recursion works well with the recursive data types.
+
+According to the situation, pick the solutions that works better for you and your team.
 
 ## 🛑 Tail Recusrion
 
