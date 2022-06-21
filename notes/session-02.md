@@ -917,7 +917,60 @@ Generally, recursion works well with the recursive data types.
 
 According to the situation, pick the solutions that works better for you and your team.
 
-## 🛑 Tail Recusrion
+## 🚧 Tail Recusrion
+
+Let's remind the factirial function defined before:
+
+```scala
+def factorial(n: Int): Int =
+    if n == 0 then 1
+    else n * factorial(n - 1)
+```
+
+and below is the evaluation of `factorial(3)`
+
+```
+- 3 * factorial(3 - 1)
+- 3 * 2 * factorial(2 - 1)
+- 3 * 2 * 1 * factorial(1 - 1)
+- 3 * 2 * 1 * 1
+- 6
+```
+
+Each time the runtime evaluates a `factorial` call, it pushes its parameter to the **call stack**.
+
+If the chain of recursive calls is to long the call stack overflows, which produces a runtime error called `StackOverflowError`.
+
+The maximal number of iterations before getting a `StackOverflowError` depends on the runtime, it is in general around tens of thousands.
+
+Luckily, it is possible to not use stack space by putting the recursive call in _tail_ position.
+
+A recursive call is in tail position if it is the result of the recursive method (i.e., there is no futher operation applied to it).
+
+```scala
+def factorial(n: Int): Int =
+    def factorialTailRec(x: Int, accumulator: Int): Int =
+        if x == 0 then accumulator
+        else factorialTailRec(x - 1, x * accumulator)
+    
+    factorialTailRec(n, 1)
+end facotrial
+```
+
+With this definition, call to `factorialTailRec` do not need to use space on the call stack. Below the evaluation of this version:
+
+```
+- factorialTailRec(3 - 1)
+- factorialTailRec(3 - 1, 3 * 1)
+- factorialTailRec(2, 3)
+- factorialTailRec(2 - 1, 2 * 3)
+- factorialTailRec(1, 6)
+- factorialTailRec(1 - 1, 1 * 6)
+- factorialTailRec(0, 6)
+- 6
+```
+
+In summary, the call stack size may limit the number of possible iterations of a recrusive methods, unless the recursive call is in tail position.
 
 ## 🛑 "for" Syntax
 
