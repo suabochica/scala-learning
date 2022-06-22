@@ -804,7 +804,7 @@ In Scala, there is a `null` value, but is here mostly fo interoperability with J
 
 To summarize, the type `Option` models optional values. A value of type `Option[A]` can either be `None`, or `Some(a: A)`. Some collections operations return optional values (e.g., `find`, `headOption`).
 
-## ✅ Introducing Loops
+## Introducing Loops
 Let's check different ways to write loops. Most algorithms involve some kind of loops.
 
 For instance, sorting a sequence requires iterating on its elements until ther are sorted.
@@ -917,7 +917,7 @@ Generally, recursion works well with the recursive data types.
 
 According to the situation, pick the solutions that works better for you and your team.
 
-## 🚧 Tail Recusrion
+## Tail Recusrion
 
 Let's remind the factirial function defined before:
 
@@ -948,7 +948,7 @@ Luckily, it is possible to not use stack space by putting the recursive call in 
 A recursive call is in tail position if it is the result of the recursive method (i.e., there is no futher operation applied to it).
 
 ```scala
-def factorial(n: Int): Int =
+def factorial(n: Int): Int = 
     def factorialTailRec(x: Int, accumulator: Int): Int =
         if x == 0 then accumulator
         else factorialTailRec(x - 1, x * accumulator)
@@ -972,6 +972,106 @@ With this definition, call to `factorialTailRec` do not need to use space on the
 
 In summary, the call stack size may limit the number of possible iterations of a recrusive methods, unless the recursive call is in tail position.
 
-## 🛑 "for" Syntax
+## "for" Syntax
+
+Iterating over collections or transforming collections is so common in programming that Scala supports a special syntax aiming at making such pieces of code more readable.
+
+As an example, consider a program that computes a list of phone numbers that start with the country prefix "+41", and the name of the contact belong to:
+
+```scala
+val namesAndSwissNumbers: List[(String, String)] =
+    contacts.flatMap {
+        contact => contact.phoneNumbers
+            .filter(phoneNumber => phoneNumber.startsWith("+41"))
+            .map(phoneNumber => (contact.name, phoneNumber))
+    }
+```
+
+The same program can be expressed as a "for expression":
+
+```scala
+val namesAndSwissNumbers: List[(String, String)] =
+    for
+        contact <- contacts
+        phoneNumber <- contact.phoneNumbers
+        if phoneNumber.startsWith("+41")
+    yield (contact.name, phoneNumber)
+```
+
+A for-expression is of the form
+
+```
+for ( s ) yield e
+```
+
+where `s` is a sequence of _generators_ and _filters_, and `e` is an expression whose value is returned by an iteration.
+
+- A _generator_ is of the form `p <- e`, where `p` is a pattern and `e` an expression whose value is a collection.
+- A _filter_ is of the form `if f` where `f` is a boolean expression.
+- The sequence must start with a generator.
+- If there are several generators in the sequence, the last generators vary faster than the first.
+
+Instead of `( s )`, the sequence of generators and filters can be written on multiplen lines without requiring semicolons.
+
+The Scala compiler translates for-expressions in terms of `map`, `flatMap` and a lazy variant of `filter`. Here is the translations scheme used by the compiler.
+
+1. A simple for-expression
+
+```
+for x <- e1 yield e2
+```
+
+is translated to
+
+```
+e1.map(x => e2)
+```
+
+2. A for-expression
+
+```
+for (x <- e1 if f; s) yield e2
+```
+
+where `f` is a filter and `s` is a (potentially empty) sequence of generators and filters is translated to
+
+```
+for (x <- e1.withFilter(x => f); s) yield e2
+// and the translations continues with the new expression
+```
+
+You can think of `withFilter` as a variant of `filter` that does not produce an itermediate list, but instead filters the following `map` or `flatMap` function application.
+
+3. A for expression
+
+```
+for(x <- e1; y <- e2; s) yield e3
+```
+
+where `s` is a sequence of generators and filters, is translated to
+
+```
+e1.flatMap(x => for (y <- e2; s) yield e3)
+// and the translation continues with the new expression
+```
+
+Imperative loops also have a special syntax. The statement:
+
+```
+for x <- e1 do s
+// Note the usage of `do` instead of `yield`)
+```
+
+Is translated to:
+
+```
+e1.foreach(x => s)
+```
+
+The `foreach` does not return a new collection. It is useful to perform side effects like printing the elements of a collection.
+
+In summary `for` expressions and statements _desugar_ to calls to collections operations.
+
+They can make combinatorial search more readable.
 
 // ✅  🚧  🛑
