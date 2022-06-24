@@ -1,6 +1,7 @@
 # Session 2: Generic Data Types
 
-## First steps with Lists
+## Collections
+### First steps with Lists
 
 We will see an overview of the `List` data type: how it can be used to model collections of values, how to construct `List` instances, and some basec manipulation operations.
 
@@ -51,7 +52,7 @@ To summary, List are one particular **data structure** modeling a collection of 
 
 Lists can be manipulated with high-level operations for transforming or filtering their elements.
 
-## Functions
+### Functions
 
 Functions are very much like methods, they have parameters and they return results. For example, the `map` operation takes as parameter a _function_ applied to each element of the list.
 
@@ -183,7 +184,7 @@ val placeholder = (_: Int) + 1
 val wildcard = (_: Int) => 42
 ```
 
-## More Operations on List
+### More Operations on List
 
 In the previous section we have seen how to construct lists and how to do some basic operations with them.
 
@@ -300,7 +301,7 @@ For other side, the randoms access is not efficient on list.
 
 To summarize, lists are linear immutable sequences. They can be constructed and decomposed with the `::` operator. They are not optimized for random access but support efficiend `head` and `tail` decomposition.
 
-## Introducing Collections
+### Introducing Collections
 
 We have already met the `List` collection. We will now learn about another collection types, In particular how to:
 
@@ -347,7 +348,7 @@ This convention makes it clear when we are creating a mutable collection.
 
 We started our introduction to collection by looking at three examples of collections types: `List`, `ArrayBuffer`, and `Map` and learned about the packages in which they are found.
 
-## Constructing Collections
+### Constructing Collections
 
 In this section we will learn some of the many ways that can be used to construct collections.
 
@@ -447,7 +448,7 @@ To recap, we have seen the following methods to construct collections:
 
 We also learned about tuples.
 
-## Querying Collections
+### Querying Collections
 
 Several methods allow us to query simple properties of a collection, such as the number of elements it contains.
 
@@ -493,7 +494,7 @@ We have seen the following methods to query properties of a collection
 - `find` to return the first element that matches a predicate;
 - `filter` to return all the element that match a predicate;
 
-## Transforming Collections
+### Transforming Collections
 
 In this section we will learn about a handful methods that allow us to transform the elements of a collection to produce a new collection, or, in the case of `foldLeft`, anything all.
 
@@ -673,7 +674,7 @@ In summary, below are the methods for transforming collections:
 - `foldLeft` for transforming a collection in any way; and
 - `groupBy` for grouping elements by a partition function.
 
-## Sequences and Maps
+### Sequences and Maps
 
 In this section we will learn about two broad group of collections – sequences and maps – and features that are specific to each group.
 
@@ -730,7 +731,7 @@ We have learned that sequences are collections whose elements have a defined ord
 - some sequences are linear, meaning the time to access an element is proportional to how far it is from the start, and some are indexed, meaning all elements take the same time to access.
 - We also learned that maps have method `get` to access values by key.
 
-## Option
+### Option
 
 The special case of collection that has at most one element is named `Option`.
 
@@ -804,7 +805,9 @@ In Scala, there is a `null` value, but is here mostly fo interoperability with J
 
 To summarize, the type `Option` models optional values. A value of type `Option[A]` can either be `None`, or `Some(a: A)`. Some collections operations return optional values (e.g., `find`, `headOption`).
 
-## Introducing Loops
+
+## Loops
+### Introducing Loops
 Let's check different ways to write loops. Most algorithms involve some kind of loops.
 
 For instance, sorting a sequence requires iterating on its elements until ther are sorted.
@@ -917,7 +920,7 @@ Generally, recursion works well with the recursive data types.
 
 According to the situation, pick the solutions that works better for you and your team.
 
-## Tail Recusrion
+### Tail Recusrion
 
 Let's remind the factirial function defined before:
 
@@ -972,7 +975,7 @@ With this definition, call to `factorialTailRec` do not need to use space on the
 
 In summary, the call stack size may limit the number of possible iterations of a recrusive methods, unless the recursive call is in tail position.
 
-## "for" Syntax
+### "for" Syntax
 
 Iterating over collections or transforming collections is so common in programming that Scala supports a special syntax aiming at making such pieces of code more readable.
 
@@ -1074,4 +1077,4 @@ In summary `for` expressions and statements _desugar_ to calls to collections op
 
 They can make combinatorial search more readable.
 
-// ✅  🚧  🛑
+### Extra Collections
