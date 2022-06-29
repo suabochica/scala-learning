@@ -1,2 +1,9 @@
 *.class
 *.log
+
+*.DS_Store
+
+**/.bloop
+**/.metals
+**/.vscode
+
