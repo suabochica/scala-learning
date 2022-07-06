@@ -35,3 +35,15 @@ The first task consists in computing the median grade of a collection of grades.
 Then, implement the elect method of the class Election. It takes a collection of ballots and returns the winner alternative. The method elect re-organizes the data contained in the ballots so that the majority judgement algorithm can be applied to the data. From the collection of ballots, construct a Map containing all the grades assigned to each alternative.
 
 Finally, implement the majority judgement algorithm in the method findWinner. First, compute the highest median grade assigned to an alternative. Second, retrieve all the alternatives that got the same median grade as the highest median grade. At that point, if only one alternative got the highest median grade, it’s the winner. Otherwise, there is a tie-break between all the candidates that got the same median grade as the highest median grade. In such a case, apply the algorithm findWinner again on the tied alternatives, after having removed one median grade from their grades.
+
+for run tests execute:
+
+```
+sbt test
+```
+
+to compile the exercise:
+
+```
+sbt compile
+```
