@@ -111,6 +111,7 @@ case class Election(description: String, candidates: Set[Candidate]):
       // median grade.
       val bestMedianGrade: Grade =
         gradesPerCandidate
+          .values
           .filter(_.nonEmpty)
           .map(grades => Grade.median(grades))
           .maxBy(_.ordinal)
@@ -141,7 +142,7 @@ case class Election(description: String, candidates: Set[Candidate]):
         val bestCandidatesMinusOneMedianGrade: Map[Candidate, Seq[Grade]] =
           bestCandidates
             .map(
-              (candidates, grades) => cadidate -> grade.diff(List(bestMedianGrade))
+              (candidate, grades) => candidate -> grades.diff(List(bestMedianGrade))
             )
   
         // ✔️ Finally, call `findWinner` on the reduced collection of candidates,

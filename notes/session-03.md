@@ -47,8 +47,19 @@ Generally, build tools are not limited to a specific developer workflow but impl
       B-->D[deploy];
 ```
 
-In summary, working oin program involves performin various independent tasks such as compiling, running, and deploying the program. Build tools aim at simplifyin the coordination of these tasks.
-### 🛑 Introduction to `sbt`
+In summary, working oin program involves performin various independent ta sks such as compiling, running, and deploying the program. Build tools aim at simplifyin the coordination of these tasks.
+### 🚧 Introduction to `sbt`
+
+`sbt` is a build tool commonly used in Scala.
+
+> Note: there are other build tools that support Scala: Maven, Gradle, Mill, etc.
+
+Make sure the sbt command-line tool is installed accordin to the instruction in the [sbt's oficial site](https://scala-sbt.org)
+
+As sbt project is a directory with the following two files:
+
+- `project/build.properties`: defines the version of sbt we want to use
+- `built.sbt`: defines the configuration of the project
 
 ### 🛑 sbt, Keys and Scopes
 

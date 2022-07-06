@@ -6,4 +6,9 @@
 **/.bloop
 **/.metals
 **/.vscode
+**/.bsp
 
+**/target
+**/project/project
+
+exercises/democracy/project/metals.sbt

@@ -60,6 +60,8 @@ SBT is an open source build tool written in Scala for Scala and Java projects, s
 
 ## Install Scala on macOS
 
+### Homebrew
+
 Run:
 
 ```
@@ -90,4 +92,138 @@ should get:
 ```
 Scala code runner version 3.1.2 -- Copyright 2002-2022, LAMP/EPFL
 ```
+
+### sdkman
+
+SDKMAN! is a tool for managing parallel versions of multiple **Software Development Kits** on most Unix based systems. It provides a convenient Command Line Interface (CLI) and API for installing, switching, removing and listing Candidates. 
+
+First step, install sdkman. For that, open a new terminal and enter:
+
+```
+curl -s "https://get.sdkman.io" | bash
+```
+
+Follow the instructions on-screen to complete installation.
+Next, open a new terminal or enter:
+
+```
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+```
+
+Lastly, run the following code snippet to ensure that installation succeeded:
+
+```
+sdk version
+```
+If all went well, the version should be displayed. Something like:
+
+```
+  sdkman 5.15.0
+```
+
+Second step, install Scala running the next command:
+
+```
+sdk install scala
+```
+
+Alternatively, you can install a specific scala's version. To validate the available version run:
+
+```
+sdk list scala
+```
+
+An you will get the next out
+
+```
+================================================================================
+Available Scala Versions
+================================================================================
+     3.1.3               2.13.0              2.12.2              2.10.6         
+     3.1.2               2.12.16             2.12.1              2.10.5         
+     3.1.1               2.12.15             2.12.0              2.10.4         
+     3.1.0               2.12.14             2.11.12             2.10.3         
+     3.0.2               2.12.13             2.11.11             2.10.2         
+     3.0.1               2.12.12             2.11.8              2.10.1         
+     3.0.0               2.12.11             2.11.7                             
+     2.13.8              2.12.10             2.11.6                             
+     2.13.7              2.12.9              2.11.5         
+```
+
+To instal the version 2.13.8 of scala, run:
+
+```
+sdk install scala 2.13.8
+```
+
+Lastly, run the following code snippet to ensure that installation succeeded:
+
+```
+scala -version
+```
+
+If all went well, the version should be displayed. Something like:
+
+```
+Scala code runner version 2.13.8 -- Copyright 2002-2021, LAMP/EPFL and Lightbend, Inc.
+```
+
+## Install sbt on macOS
+
+> Note: For this section is assumend that sdkman is already installed
+
+Install a specific version of `sbt` is a similar process of what we did installed scala via sdkman.
+
+View the available SBT versions with:
+
+```
+sdk list sbt
+```
+
+you will get the next output:
+
+```
+================================================================================
+Available Sbt Versions
+================================================================================
+     1.4.2               1.3.1               1.1.0
+     1.4.1               1.3.0               1.0.4
+     1.4.0               1.2.8               1.0.3
+     1.4.0-RC2           1.2.7               1.0.2
+     1.3.13              1.2.6               1.0.1
+     1.3.12              1.2.5               1.0.0
+     1.3.11              1.2.4               0.13.18
+     1.3.10              1.2.3               0.13.17
+     1.3.9               1.2.1
+     1.3.8               1.2.0
+     1.3.7               1.1.6
+     1.3.6               1.1.5
+     1.3.5               1.1.4
+     1.3.4               1.1.2
+     1.3.3               1.1.1
+```
+
+Install SBT 1.5.0-RC2 with: 
+
+```
+sdk install sbt 1.5.0-RC2
+```
+
+After installing, respond with a “Y” to set 1.5.0-RC2 as your default SBT.
+
+## Run exercises
+
+Open a new terminal and navigate to the project exercise:
+
+```
+cd scala-learning/exercises/democracy 
+```
+
+Open the project with Visual Code and the Metals plugin installed on it from terminal:
+
+```
+code .
+```
+
+The first time you open the project with Visual Code will ask to you "Import Build?" in a dialog. Accept the suggestion an wait that metals build the project.
 
