@@ -41,10 +41,10 @@ Idea: you indicate where you program source files are located, which libraries y
 Generally, build tools are not limited to a specific developer workflow but implement a generic task engine able to coordinate the execution of a graph of tasks.
 
 ```mermaid
-  graph tasks TD;
-      A[fetch]-->B[compile];
-      B-->C[run];
-      B-->D[deploy];
+graph TD;
+    A[fetch] --> B[compile];
+    B --> C[run];
+    B --> D[deploy];
 ```
 
 In summary, working oin program involves performin various independent ta sks such as compiling, running, and deploying the program. Build tools aim at simplifyin the coordination of these tasks.
@@ -60,6 +60,93 @@ As sbt project is a directory with the following two files:
 
 - `project/build.properties`: defines the version of sbt we want to use
 - `built.sbt`: defines the configuration of the project
+
+By default, `sbt` compiles source files that are in the directory `src/main/scala`.
+
+When your project contains multiple Scala files, if you modify only one file, `sbt` will try to recompile only this file and the files that depend on it, but not more. This is called *incremental computation*.
+
+To compile you project, first enter to the `sbt` cli of the project running the next command:
+
+```
+sbt
+```
+
+The out of this command should be:
+
+```
+sbt:hello-sbt>
+```
+
+In this case `hello-sbt` is the project's name. So to compile the project execute the next command:
+
+```
+sbt:hello-sbt> compile
+```
+
+Here a `/target` folder should be created as sibling of the `/project` directory. This folder is the output of the compilation an it is cached to agilize the re-compile process. 
+
+The `run` task compiles and then runs the program:
+
+```
+sbt:hello-sbt> run
+```
+
+Another useful task is `console`, which compiles he program and then opens a Read-Eval Print Loop (REPL), an interactive prompt to evaluate expressions in your program.
+
+Below its recopile in a graph the main concepts and their dependencies:
+
+```mermaid
+graph TD;
+    A[run] --> C[compile];
+    B[publish] --> C;
+    C --> D[update];
+    C --> E(sourceDir);
+    D --> F(libraryDependencies);
+```
+
+There are two main conceps int `sbt`:
+
+- **Settings**: Parametrize the build, ther are evaluated one (e.g., sourceDir, libraryDependecies)
+- **Tasks**: Perform action (download, compile, run, etc.), they are evaluated at each invocation.
+  
+Tasks can be parametrized by setting.
+
+Speaking of *library dependencies*, let's see how to use a library for colorizing the text we print to the console. First, we need to declare the dependency in the build definition by appending the so-called coordinates of the library to the `libraryDependencies` key. So to find the coordinates of the library, I'm going to use the [Scala Index](https://index.scala-lang.org). The library I want to use is named [Fansi](https://index.scala-lang.org/com-lihaoyi/fansi). Now we update the `build.sbt` file with the next content
+
+```
+// build.sbt
+scalaVersion := "3.0.0-RC1"
+libraryDependencies += "com.lihaoyi" %% "fansi" % "0.3.0"
+```
+
+To ensure the inclusion of the librery we should re-build the project. So, lets `run` the program:
+
+```
+sbt:hello-sbt> run
+```
+and then let's `reload` it.
+
+```
+sbt:hello-sbt> reload
+```
+
+Now to use the library, lets update the `HelloSbt.scala` file with the next content:
+
+```scala
+package hellosbt
+
+val greeting =  "Hello, sbt!!!"
+
+@main def run(): Unit = println(fansi.Color.Red(greeting))
+```
+
+After this change when we `run` the program, we get the `"Hello, sbt!!!"` message in red.
+
+This way is how we include library dependencies in Scala via `sbt`
+
+`sbt` provides common predefined task and settings out of the box. Additional task or predefined configurations can be provided by **plugins**. Plugins define how the build itself is managed and must be declared in the `project/plugins.sbt`
+
+In summary, `sbt` is a build tool for Scala. It is interactive: you start the sbt shell in the morning and manage your project from there. The build definition is written in Scala. A build definition essentially assigns values to setting keys (such as `scalaVersion`, or `libraryDependencies`)
 
 ### 🛑 sbt, Keys and Scopes
 
