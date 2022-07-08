@@ -48,7 +48,7 @@ graph TD;
 ```
 
 In summary, working oin program involves performin various independent ta sks such as compiling, running, and deploying the program. Build tools aim at simplifyin the coordination of these tasks.
-### 🚧 Introduction to `sbt`
+### ✅ Introduction to `sbt`
 
 `sbt` is a build tool commonly used in Scala.
 
@@ -148,9 +148,99 @@ This way is how we include library dependencies in Scala via `sbt`
 
 In summary, `sbt` is a build tool for Scala. It is interactive: you start the sbt shell in the morning and manage your project from there. The build definition is written in Scala. A build definition essentially assigns values to setting keys (such as `scalaVersion`, or `libraryDependencies`)
 
-### 🛑 sbt, Keys and Scopes
+### ✅ sbt, Keys and Scopes
 
-## 🛑 Modules
+Let's understand the Scopes concpet in `sbt` and how use them.
+
+We have seen that the source directories are different for the program and its tests. However, there is a single key `sourceDirectory` that allow us to identify the source directory of the project. It is important to know that a key can have different values in diferent **scopes**. Lets illustrate this with the next outputs in the terminal:
+
+```
+sbt: hello-sbt> Compile / sourceDirectory
+src/main
+
+sbt: hello-sbt> Test / sourceDirectory
+src/test
+```
+
+There is a single concept of source directory, modeled by the key `sourceDirectory`, reused by both `Compile` and `Test` configurations by scoping the key to the corresonding configuration.
+
+By scoping the key to the corresponding configuration, each key can be assigned a value along a configuration such as `Compile`, `Test` or no specific configuration which is named `Zero`. 
+
+When we look up the value of a key, we can specify the configuration we are interested. If no configuration is specified, `sbt` first tries with the `Compile` configuration and falls back to the `Test` configuration. For instance, just `run` is equivalent to `Compile / run`, which means run in the Compile configuration.
+
+Conversely, if we look up for `Compile / scalaVersion`, which means the value of the setting `scalaVersion` in the scope of the Compile configuration. The key `scalaVersion` has no value in that scope. Then `sbt` falls back to a more generic scope. It looks up in the `Zero` configuration.
+
+Configurations are just one possible axis of key scoping.
+
+Keys can also have different values according to a particular **task** key. For instance, the task `unmanagedSources` lists all the projects source files:
+
+```4yy
+sbt: hello-sbt> show unmanagedSourcse
+[info] * src/main/scala/hellowsbt/Main.scala
+```
+
+The task can be configured by changing the value of the setting `includeFilter`:
+
+```
+sbt: hello-sbt> show unmanagedSourcse / includeFilter
+[info] ExtensionFilter(java, scala)
+```
+
+By default, `sbt` looks for source files with extension `.java` and `.scala`. Let's include `.sc` files in the unmanaged sources updating the `build.sbt` file:
+
+```
+// built.sbt
+unmanagedSourcse / includeFilter := new io.ExtensionFilter(
+    "java",
+    "scala",
+    "sc"
+)
+```
+
+and then, when we launcg the query we get:
+
+```
+sbt: hello-sbt> show unmanagedSourcse / includeFilter
+[info] ExtensionFilter(java, scala, sc)
+```
+There is a third axis that can be used to assign values to sbt keys.
+
+When a project contains sub-projects, each sub-project can set its own values for some keys. This is typically the case for the setting `baseDirectory`, which defines the root directory of each sub-project.
+
+In our build definition example, we only have one project, so all our settings are scoped to this project. We can explicitly see that by prefixing the name of a key with the name of our project, `hello-sbt`. 
+
+```
+sbt: hello-sbt> hello-sbt / sourceDirectory
+[info] src
+```
+
+There is also a special project named `ThisBuild`, which means the "entire build". so a setting applies to the entire build rather than just a single project.
+
+`sbt` falls back to `ThisBuild` when you look for the value of a key that has not been defined for a specific project.
+
+This is a convenient way to define cross-project settings
+
+```
+// Set the Scala version for all the projects in this build definition
+ThisBuild / scalaVersion := "3.0.0"
+```
+
+Here is how we can see the value of the `includeFilter` key according multiple axes:
+
+```
+// current project, no configuration, unmanagedSource task
+unmanagedSources / includeFilter
+
+// hello-sbt project, no configuration, unmanagedSource task
+hello-sbt / unmanagedSources / includeFilter 
+
+// hello-sbt project, Compile configuration, unmanagedSource task
+hello-sbt / Compile/ unmanagedSources / includeFilter 
+```
+
+In summary, when the same concept (e.g., a source directory) is reused in several context such as configurations (e.g., the program and its test), or tasks, sbt encourages you to use a single setting key for this concept and to scope the value you assign to it to the desired context.
+
+## 🚧 Modules
 
 ### 🛑 Encapsulation
 
