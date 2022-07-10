@@ -240,9 +240,147 @@ hello-sbt / Compile/ unmanagedSources / includeFilter
 
 In summary, when the same concept (e.g., a source directory) is reused in several context such as configurations (e.g., the program and its test), or tasks, sbt encourages you to use a single setting key for this concept and to scope the value you assign to it to the desired context.
 
+### Program Entry Point
+
+Unlike worksheets that are evaluated from top to bottom, Scala projects hava a program entry point.
+
+A program entry poin is a mehtods definitions annotated with `@main`,
+
+Program entry points can take parameters.
+
+Project source files cannot contain top-level statements, only top-level definitions. Those top-level definitions are `def`, `val`, `var`, `object`, `trait`, and `class` definitions.
+
 ## 🚧 Modules
 
+Consider the following situation. We want to implement a program that exposes data read from the database as JSON documents.
+
+The part of the program that exposes the data calls the part of the program that reads from the database, and it serializes the result into JSON.
+
+The *problem* we want to avoid is that if the database connection is widely available to any part of the program, it might be too easy to mess up with the state of the system. Instead, we want to restrict access to the database connection, so that we can increase our confidence that the code that uses it is correct. 
+
+This leads to the following architecture:
+
+```mermaid
+classDiagram
+    HttpServer --|> DatabaseAccess
+    DatabaseAccess : +connection Connection
+    DatabaseAccess: +readData() List[Data]
+```
+
+The HTTP server cannot access the underlying `connection` of the `DatabaseAccess` module. It can only use the public `readData()` operations.
+
+Translate the diagram into Scala code should throw the next definitions:
+
+```scala
+class DatabaseAccess(connection: Connection):
+    def readData(): List[Data] = ...
+
+class HttpServer(databaseAccess: DatabaseAccess):
+    ...
+    databaseAccess.readData()
+    ...
+
+def main() =
+    val connection: Connection = ...
+    val databaseAccess: DatabaseAccess = DatabaseAccess(connection)
+    val httpServer: HttpServer = HttpServer(databaseAccess)
+    ...
+```
+
+Let's go deep in the next lines fo code:
+
+```scala
+class DatabaseAccess(connection: Connection):
+    def readData(): List[Data] = ...
+        connection
+        ...
+```
+
+This code defines a **type** `DatabaseAccess`and a **constructor** of the same name. The type `DatabaseAccess` has one method, `readData`.
+
+By contrast with case classes, constructor parameters of "simple" classes area **private**. i.e., they can be accessed only from the class body.
+
+This highlights one difference between case classes and simple classes: the former achieve aggregation whereas the latter achieve **encapsulation**. Let's go deep with encapsulation in the next section.
 ### 🛑 Encapsulation
+
+Class members are public by default: a user of the class `DatabaseAccess` can call its `readData` operaiton. It is also posible to define private members by qualifying them as such:
+
+```scala
+class DatabaseAccess(connection: Connection):
+    private def decodeTableRow(row: TableRow): Data = ...
+    def readData(): List[Data] = ...
+```
+
+The operation `decodeTableRow` can only be called from the insde of the class `DatabaseAccess`.
+
+Sometimes, is useful have several implementations of the same type. For instance is a common practice to use a persistent database for production, but an in-memory database for some tests.
+
+```mermaid
+classDiagram
+    DatabaseAccess <|-- PersistentDatabase
+    DatabaseAccess <|-- InMemoryDatabase
+    DatabaseAccess: +readData() List[Data]
+    PersistentDatabase : +connection Connection
+    class PersistentDatabase {
+        readData(connection) List[Data]
+    }
+    class InMemoryDatabase {
+        readData() List[Data]
+    }
+```
+
+You can define an interface in Scala by writing a `trait` definition.
+
+```scala
+trait DatabaseAccess:
+    def readData(): List[Data]
+
+class PersistentDatabase(connection: Connection) extends DatabaseAccess:
+    def readData(): List[Data] = ...
+
+class InMemoryDatabase extends DatabaseAccess:
+    def readData(): List[Data] = ...
+```
+
+
+Again, let's check the next lines of code:
+
+```scala
+trait DatabaseAccess:
+    def readData(): List[Data]
+```
+
+This code defines a **type** `DatabaseAccess` but **no constructor**. The type `DatabaseAccess` has one **abstract method**, `readData`.
+
+Unlike sealed traits, "simple" traits can have an unbounded number of implementations.
+
+Classes that extend the trait `DatabaseAccess` have to implement the method `readData`, otherwise, it will throw a compile error.
+
+> Note: It is good practice to depend on interfaces rather than specific implementations. 
+
+Below, it is recopile the visibility class/trait members:
+
+- **public** members are visible from the outside of a class or trait, 
+- **private** members are visible from the inside of class or trait, and there is a third level of visibility.
+- **protected** members are visible from the inside of a trait or class and from the inside of its descendant (but not from the outside like private members).
+
+Let's check the protected members with an example. With a combinatin of protected and abstract members we can make a dish while delaying to a later point the secret sauce brought by a chef:
+
+```scala
+trait Chef:
+    protected def secretSauce(sauce: Sauce): Sauce
+    def makeDish(meat: Meat, vegetables: Vegetables: Dish) =
+        ...
+        sercretSauce(...)
+        ...
+
+object YukihiraSoma extends Chef:
+    protected def secretSauce(sauce: Sauce): Sauce = ...
+```
+
+In summary, define abstraction barriers with classes and traits, which encapsulate implementation details.
+
+Use private members to restrict the visibility of members to the inside of class or trait definition, and use abstract members to delay the implementation of operation to concrete classes.
 
 ### 🛑 Extending and Refining Classes
 
