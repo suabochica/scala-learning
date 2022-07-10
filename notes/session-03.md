@@ -240,7 +240,7 @@ hello-sbt / Compile/ unmanagedSources / includeFilter
 
 In summary, when the same concept (e.g., a source directory) is reused in several context such as configurations (e.g., the program and its test), or tasks, sbt encourages you to use a single setting key for this concept and to scope the value you assign to it to the desired context.
 
-### Program Entry Point
+### ✅ Program Entry Point
 
 Unlike worksheets that are evaluated from top to bottom, Scala projects hava a program entry point.
 
@@ -301,7 +301,7 @@ This code defines a **type** `DatabaseAccess`and a **constructor** of the same n
 By contrast with case classes, constructor parameters of "simple" classes area **private**. i.e., they can be accessed only from the class body.
 
 This highlights one difference between case classes and simple classes: the former achieve aggregation whereas the latter achieve **encapsulation**. Let's go deep with encapsulation in the next section.
-### 🛑 Encapsulation
+### ✅ Encapsulation
 
 Class members are public by default: a user of the class `DatabaseAccess` can call its `readData` operaiton. It is also posible to define private members by qualifying them as such:
 
@@ -382,7 +382,74 @@ In summary, define abstraction barriers with classes and traits, which encapsula
 
 Use private members to restrict the visibility of members to the inside of class or trait definition, and use abstract members to delay the implementation of operation to concrete classes.
 
-### 🛑 Extending and Refining Classes
+### 🚧 Extending and Refining Classes
+
+In this section let's check the feature of Scala to do object-oriented programming.
+
+Traits and classes can form a rich hierarchy. An example is the standard collections.
+
+```mermaid
+classDiagram
+    Iterable <|-- Set
+    Iterable <|-- Seq
+    Iterable <|-- Map
+    Seq <|-- List
+    Seq <|-- Vector
+```
+
+Each subtype may introduce more specific methods. For instance, the type `Seq` introduces methods for sorting elements. This operation does not exist on `Set` and `Map` because by definition their elements have no order.
+
+Actually, each collection type comes in two variant, immutable and mutable.
+
+Scala has the next class hierarchy:
+
+
+```mermaid
+graph TD
+    B[scala.AnyVal] --> A[scala.Any];
+    C[scala.AnyRef] --> A[scala.Any];
+    D[scala.Unit] --> B
+    E[scala.Boolean] --> B
+    F[scala.Char] --> B
+    G[scala.Byte] --> B
+    H[scala.Double] --> B
+    I[scala.String] --> C
+    J[scala.Itereable] --> C
+```
+
+At the top of the type hierarchy we find:
+    - `Any` the base type of all types; methods `==`, `!=`, `equals`, `hashCode`, `toString`
+    - `AnyRef` The base type of all reference types; alias for `java.lang.Object`
+    - `AnyVal` The base type of all primitive types.
+
+A clas or object definition can extend **several** traits:
+
+```scala
+trait Logging:
+    val logger = ...
+
+class InMemoryDatabase extends DatabaseAccess, Logging:
+    def readData(): List[Data] =
+    ...
+    logger.debug("...")
+```
+
+Also you can **override** the implementation of inherit members. For prevent a member from being overridden you can qualifying it with `final`.
+
+Last, within a class definition, you can use the identifier `this` to refer to the instance being defined.
+
+We have introduced traits with abstract methods as a way to define interfaces, and classes that extend these traits as a way to provide concrete implementations. Scala supports other variations around traits and classes, such as abstract classes, traits parameters, or secondary constructors. These constructs have subtle differences or specificities, which are out of the scope of this post.
+
+In summary, types form a hierarchy whose top type is `Any`.
+
+Multiple traits can be mixed to a class or an object definition.
+
+From within a class definition, you can refer to:
+
+- The instance being defined with the identifier `this`
+- the parent implementation of a methods `m` with `super.m`
+
+You can override inherited members, unless they are final.
 
 ### 🛑 Case Classes vs Simple Classes
 
