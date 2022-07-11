@@ -382,7 +382,7 @@ In summary, define abstraction barriers with classes and traits, which encapsula
 
 Use private members to restrict the visibility of members to the inside of class or trait definition, and use abstract members to delay the implementation of operation to concrete classes.
 
-### 🚧 Extending and Refining Classes
+### ✅ Extending and Refining Classes
 
 In this section let's check the feature of Scala to do object-oriented programming.
 
@@ -451,7 +451,71 @@ From within a class definition, you can refer to:
 
 You can override inherited members, unless they are final.
 
-### 🛑 Case Classes vs Simple Classes
+### 🚧 Case Classes vs Simple Classes
+
+In this section it will discuss the differences between **case classes**, and **simple clases**. In the same way, it will abord the difference between **sealed traits** and **simple traits**.
+
+We have seen how to use classes and tratis to achieve encapsulation. We have previously been using case classes and sealed traits to model bussines domains.
+
+As we mentioned in the previously, the main difference between case classes, and simple classes is that case classes achieve **aggregation**, whereas simple cases achieve **encapsulation**.
+
+An important consequence is that constructor parameters of case classes are promoted to **public** members, whereas constructor parameters of simple classes are by default **private**.
+
+ Although the purpose of aggregation, and encapsulation are quite different, it makes sense to model both with the same concept, namely classes. Actually, a case class is just a special case of a simple class
+
+When you define a case class, the compiler defines a class, and customizes some parts of it:
+
+- constructor parameters are promoted to public members (a.k.a. **fields**),
+- an **extractor** enables pattern matching,
+- **equality** operator between instances compares the values of the case class fields.
+
+The equality part is quite important, lets check an example to go deep with this feature. If we got the next definition:
+
+```scala
+case class CaseClass(value: Int)
+
+CaseClass(42) == CaseClass(42) // true
+```
+
+However, with default equality:
+
+```scala
+case class SimpleClass(value: Int)
+
+SimpleClass(42) == SimpleClass(42) // false
+```
+
+We will discuss this diference later.
+
+Despite these differences, both case classes and simple classes: 
+
+- define a new type, along with the new constructor.,
+- can have public and private members,
+- can extend traits and override members, and 
+- create abstraction levels
+
+Now let's see the difference between sealed traits and simple traits. The only difference between sealed traits, and simple traits is that sealed traits have a fixed number of sub classes. Whereas simple tratis can have an unlimited number of subclasses.
+
+More precisely, the sub classes of a sealed traits have to be defined in the same file as the substrate itself.
+
+ A practical consequence of that, is that exhaustivitty checking in pattern matching is only possible with sealed traits.
+
+ Despite these differences, both sill traits and simple traits:
+
+ - define a new type with no constructor,
+ - can have concrete and abstract members,
+ - can have public protected, and private members, and
+ - create abstraction levels.
+
+Case classes and seed traits make you think of types as **sets of possible values**. For instance, the type `Boolean` has two possible values, `true` and `false`, the type `Option[Boolean]` has three possible values and so on.
+
+Alternatively, "simple" traits and classes make you think of types as **interfaces** that provide a specific set of operations, for instance, the type `Boolean` has logic operation such as `||` and `&&`.
+
+In summary, types can be seen as sets of operations (with an unbounded number of possible values), or sets of possible values (with an unbounded number of operations).
+
+Classes conveniently group operations together.
+
+If the set of possible values of the type is bounded, then it is probably a good idea to model this type with a case class. Conversely, if the set of possible operations, and the values of some type is bounded, then it is probably a good idea to model this type with a simple class.
 
 ### 🛑 Opaque Types
 
