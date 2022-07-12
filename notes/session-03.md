@@ -451,7 +451,7 @@ From within a class definition, you can refer to:
 
 You can override inherited members, unless they are final.
 
-### 🚧 Case Classes vs Simple Classes
+### ✅ Case Classes vs Simple Classes
 
 In this section it will discuss the differences between **case classes**, and **simple clases**. In the same way, it will abord the difference between **sealed traits** and **simple traits**.
 
@@ -517,8 +517,112 @@ Classes conveniently group operations together.
 
 If the set of possible values of the type is bounded, then it is probably a good idea to model this type with a case class. Conversely, if the set of possible operations, and the values of some type is bounded, then it is probably a good idea to model this type with a simple class.
 
-### 🛑 Opaque Types
+### 🚧 Opaque Types
 
+Let's check how to define zero cost abstractions with opaque type aliases.
+
+Consider the following API for manipulating users and vehicles
+
+```scala
+def findVehicle(vehicleID: Long): Option[Vehicle] = ...
+def mistake(userId: Long): Unit =
+    findVehicle(userID) // What?
+```
+
+Problem: since both vehicle IDs and user IDs are modeled with type `Long`, we can mix them!
+
+One way to prevent this problem is to use distinct types for representing user IDs and vehicle IDs:
+
+```scala
+case class UserID private (value: Long)
+
+object UserID:
+    def parse(string: String): Option[UserID] =
+        string.toLongOption.map(id => UserID(id))
+```
+
+- This code defines a public type UserID, but its constructor is private (it can be accessed from within the UserID companion object, though)
+- The only way to construct a value of type UserID is to use the operation UsertID.parse
+
+Another approach could be:
+
+```scala
+def findVehicle(vehicleID: VehicleID): Option[Vehicle] = ...
+def mistake(userId: UserId): Unit =
+    findVehicle(userID) // What?
+    //          ˆˆˆˆ
+    //          Found (UserID: UserID), Required: VehicleID
+```
+
+This nonsesical program is now rejected. However, the `UserID` and `VehicleID` abstractions have a cost: they instantiate a wrapper object.
+
+To remove the runtime overhead we can use a **type alias**:
+
+```scala
+type UserID = Long
+
+object UserID:
+    def parse(string: String): Option[UserID] =
+        string.toLongOption // Option[Long]
+```
+
+Type aliases incur no runtime costs (there is no class added), and can be interchageably used with the type they are an alias to. They are alos handy to provide a shorthand name for complex type expression. However, with simple type aliases we are back to square one...
+
+
+```scala
+type UserID = Long
+type VehicleID = Long
+
+def findVehicle(vehicleID: VehicleID): Option[Vehicle] = ...
+def mistake(userId: UserId): Unit =
+    findVehicle(userID) // What?
+```
+
+**Opaque** types offer the best of both worlds:
+
+```scala
+object UserID:
+    opaque type UserID = Long
+
+object VehicleID:
+    opaque type vehicleID = Long
+
+import UserID.UserID
+import VehicleID.VehicleID
+
+def findVehicle(vehicleID: VehicleID): Option[Vehicle] = ...
+def mistake(userId: UserId): Unit =
+    findVehicle(userID) // What?
+    //          ˆˆˆˆ
+    //          Found (UserID: UserID.UserID), Required: VehicleID.VehicleID
+```
+
+Below some specific features of opaque type aliases:
+
+- Like type aliases, opaque type aliases incur no runtime overhead,
+- Inside the scope of the alias definition, the alias is transparent:
+
+```scala
+object UserID:
+    opaque type UserID = Long
+    // Within the object ID, the type User can be used
+    // interchageablu with the type Long
+
+end UserID
+```
+
+- Outside its scope, the alias is "opaque": it hides the type it is an alias to.
+
+By definition, there is nothing one can do with a value of type `UserID`. The object that defines the opaque type alias should also defined methods that *produce* and *consume* opaque types:
+
+```scala
+object UserID:
+    opaque type UserID = Long
+    def parse(string: String): Option[UserID] = String.toLongOption
+    def value(userID: UserID): Long = userID
+```
+
+In summary, type aliases let you give a name to a type expression and opaque type aliases encapsulate the type they are an alias to. Opaque type aliases are transparent inside the scope they are defined. But they are opaque outside of it, so you can define zero cost abstractions with opaque types.
 ### 🛑 Extensions Methods
 
 // ✅  🚧  🛑
