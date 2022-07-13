@@ -517,7 +517,7 @@ Classes conveniently group operations together.
 
 If the set of possible values of the type is bounded, then it is probably a good idea to model this type with a case class. Conversely, if the set of possible operations, and the values of some type is bounded, then it is probably a good idea to model this type with a simple class.
 
-### 🚧 Opaque Types
+### ✅ Opaque Types
 
 Let's check how to define zero cost abstractions with opaque type aliases.
 
@@ -625,4 +625,91 @@ object UserID:
 In summary, type aliases let you give a name to a type expression and opaque type aliases encapsulate the type they are an alias to. Opaque type aliases are transparent inside the scope they are defined. But they are opaque outside of it, so you can define zero cost abstractions with opaque types.
 ### 🛑 Extensions Methods
 
-// ✅  🚧  🛑
+Let's see how to add new methods to an existing type.
+
+In the previous section, you have seen why opaque types have no methods, so, you have to define auxiliary methods to work with opaque types. 
+
+```scala
+object UserID
+    opaque type UserID = Long
+    def value(userID: UserID): Long = userID
+```
+
+For instance, to receive the underlying `Long` value of a user ID you would write"
+
+```scala
+UserID.value(userID)
+```
+
+Instead, it would be more practical to just write:
+
+```scala
+userID.value
+```
+
+We can define a method `value` to the type `UserID` by writing an **extension method**.
+
+```scala
+object UserID
+    opaque type UserID = Long
+    extension (userID: UserID)
+        def value: Long = userID
+
+import UserID.UserID
+
+def findUser(userID: UserID): Option[User] =
+    ...
+    userID.value
+    ...
+```
+
+Extension methods aer not specific to opaque types. In fact, you can use this mechanism to enrich any type with additional methods.
+
+When you define an extension method, the compiler translate the extension methods to regular methods. As consequence, extension methods can also be called with a syntax `(operation)(firstParam)(secondParam)`.
+
+Since the type `userID` has no actual method `value` and the type `Int` has no actual method `isZero`. How does the compiler resolve codes to extension methods?
+
+What happens is that when you call a method `m` on an expression `e` of type capital `E`, like in `e.m`. and that the type `E` has no method `m`. The compiler will try to rewrite the call into `m(e)`.
+
+So this is what happens when we write `42.isZero`. This expression does not type check as is. So the compiler tries `isZero` of 42 which does type check. Note that `isZero` of`42 does type check only if the extension method `isZero` is visible at the point where the call is performed. Let's illustrate what it means to be visible with some examples.
+
+```scala
+trait IntExtensions:
+    extension (n: Int) def isZero: Boolean = n == 0
+
+    0.isZero // OK, isZero is defined in the enclosing scope
+
+object IntExtensions extends IntExtensions
+    1.isZero // OK, isZero is defined in the enclosing scope
+
+2.isZero // Error: value isZero is not membe of Int
+
+import IntExtensions.isZero
+3.isZero // OK, isZero is imported
+```
+
+Since the compiler looks for extension methods only when the method that is called is missing. It means that extensions can only add new members, but not overwrite existing ones. Also, extensions cannot refer to other class members via `this`.
+
+Consider again the following program:
+
+```scala
+object UserID
+    opaque type UserID = Long
+    extension (userID: UserID)
+        def value: Long = userID
+
+import UserID.UserID
+
+def findUser(userID: UserID): Option[User] =
+    ...
+    userID.value
+    ...
+```
+
+Here the extension method `value` is not visible at the point where the call `userID.value` is performed, in the method `findUser`.
+
+Why do not we need to import `UserID.value`?
+
+In this case, we don't need to import the extension method, because there is an additional rule applied by the compiler. Since the type `userID` is an opaque type. The compiler also looks for extension methods in its scope of definition.
+
+In summary, extension methods let you introduce new methods to existing types. The compiler allows you to apply extension methods, if they are visible at the point of application. Which means if they are defined in an including scope, inherited or imported. In the case of opaque types, the compiler also looks for extension methods in the scope of definition of the opaque type.
