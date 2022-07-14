@@ -1,12 +1,17 @@
 # 🚧 Session 3: Build tools, developer workflow, modules, encapsulation
 
+How to write Scala projects larger than a worksheet? Learn how to define an entry point for a Scala project, and discover the tools you can leverage to write, compile, run, and debug your code. Then, use object-oriented programming techniques to break down a complex project into small modular components. Finally, we discuss when to use case classes versus simple classes.
+
+#### Learning Objectives
+- Compile, run, and test your code with a build tool
+- Break down the components of your program into modules
 ## 🚧  Tooling
 
 ### 🚧  Organize Code
 
 In summary, large Scala projects are split into multiple files. Source files contain definitions organized into **packages**. You can impor entities to not have to write their fullu qualified name every times.
 
-### ✅ Build Tools
+### Build Tools
 
 As a developer whe you work on a program you need:
 
@@ -48,7 +53,7 @@ graph TD;
 ```
 
 In summary, working oin program involves performin various independent ta sks such as compiling, running, and deploying the program. Build tools aim at simplifyin the coordination of these tasks.
-### ✅ Introduction to `sbt`
+### Introduction to `sbt`
 
 `sbt` is a build tool commonly used in Scala.
 
@@ -148,7 +153,7 @@ This way is how we include library dependencies in Scala via `sbt`
 
 In summary, `sbt` is a build tool for Scala. It is interactive: you start the sbt shell in the morning and manage your project from there. The build definition is written in Scala. A build definition essentially assigns values to setting keys (such as `scalaVersion`, or `libraryDependencies`)
 
-### ✅ sbt, Keys and Scopes
+### sbt, Keys and Scopes
 
 Let's understand the Scopes concpet in `sbt` and how use them.
 
@@ -240,7 +245,7 @@ hello-sbt / Compile/ unmanagedSources / includeFilter
 
 In summary, when the same concept (e.g., a source directory) is reused in several context such as configurations (e.g., the program and its test), or tasks, sbt encourages you to use a single setting key for this concept and to scope the value you assign to it to the desired context.
 
-### ✅ Program Entry Point
+### Program Entry Point
 
 Unlike worksheets that are evaluated from top to bottom, Scala projects hava a program entry point.
 
@@ -250,7 +255,7 @@ Program entry points can take parameters.
 
 Project source files cannot contain top-level statements, only top-level definitions. Those top-level definitions are `def`, `val`, `var`, `object`, `trait`, and `class` definitions.
 
-## 🚧 Modules
+## Modules
 
 Consider the following situation. We want to implement a program that exposes data read from the database as JSON documents.
 
@@ -301,7 +306,7 @@ This code defines a **type** `DatabaseAccess`and a **constructor** of the same n
 By contrast with case classes, constructor parameters of "simple" classes area **private**. i.e., they can be accessed only from the class body.
 
 This highlights one difference between case classes and simple classes: the former achieve aggregation whereas the latter achieve **encapsulation**. Let's go deep with encapsulation in the next section.
-### ✅ Encapsulation
+### Encapsulation
 
 Class members are public by default: a user of the class `DatabaseAccess` can call its `readData` operaiton. It is also posible to define private members by qualifying them as such:
 
@@ -382,7 +387,7 @@ In summary, define abstraction barriers with classes and traits, which encapsula
 
 Use private members to restrict the visibility of members to the inside of class or trait definition, and use abstract members to delay the implementation of operation to concrete classes.
 
-### ✅ Extending and Refining Classes
+### Extending and Refining Classes
 
 In this section let's check the feature of Scala to do object-oriented programming.
 
@@ -451,7 +456,7 @@ From within a class definition, you can refer to:
 
 You can override inherited members, unless they are final.
 
-### ✅ Case Classes vs Simple Classes
+### Case Classes vs Simple Classes
 
 In this section it will discuss the differences between **case classes**, and **simple clases**. In the same way, it will abord the difference between **sealed traits** and **simple traits**.
 
@@ -517,7 +522,7 @@ Classes conveniently group operations together.
 
 If the set of possible values of the type is bounded, then it is probably a good idea to model this type with a case class. Conversely, if the set of possible operations, and the values of some type is bounded, then it is probably a good idea to model this type with a simple class.
 
-### ✅ Opaque Types
+### Opaque Types
 
 Let's check how to define zero cost abstractions with opaque type aliases.
 
@@ -623,7 +628,7 @@ object UserID:
 ```
 
 In summary, type aliases let you give a name to a type expression and opaque type aliases encapsulate the type they are an alias to. Opaque type aliases are transparent inside the scope they are defined. But they are opaque outside of it, so you can define zero cost abstractions with opaque types.
-### 🛑 Extensions Methods
+### Extensions Methods
 
 Let's see how to add new methods to an existing type.
 
@@ -713,3 +718,7 @@ Why do not we need to import `UserID.value`?
 In this case, we don't need to import the extension method, because there is an additional rule applied by the compiler. Since the type `userID` is an opaque type. The compiler also looks for extension methods in its scope of definition.
 
 In summary, extension methods let you introduce new methods to existing types. The compiler allows you to apply extension methods, if they are visible at the point of application. Which means if they are defined in an including scope, inherited or imported. In the case of opaque types, the compiler also looks for extension methods in the scope of definition of the opaque type.
+
+## Assestment
+
+Todo List, please check the contents is in `exercises/todo-list`.

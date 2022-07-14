@@ -1,5 +1,11 @@
 # Session 2: Generic Data Types
 
+Manipulate collections of values by using the generic List data type from the standard library. Then, learn about the other generic data structures provided by the standard library (sets, sequences, and maps), and their respective use cases. All the collection classes have a comprehensive set of high-level operations to transform, filter, and iterate over their elements. Last, you will learn a couple of techniques to implement loops in Scala, and their tradeoffs.
+
+#### Learning Objectives
+- Manipulate collections of values
+- Write algorithms with loops
+
 ## Collections
 ### First steps with Lists
 
@@ -1078,3 +1084,9 @@ In summary `for` expressions and statements _desugar_ to calls to collections op
 They can make combinatorial search more readable.
 
 ### Extra Collections
+
+// TODO:
+
+## Assestment
+
+Democracy, please check the contents is in `exercises/democracy`.

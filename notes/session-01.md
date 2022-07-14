@@ -1,6 +1,14 @@
 # Session 1: Domain Modeling
 
-## Elements of Programs
+First, get up and running with Scala on your computer. Then, learn how to write and evaluate basic expressions and definitions. Last, learn how to model a business domain by defining case classes and sealed traits.
+
+#### Learning Objectives
+- Setup Scala on your computer
+- Write Scala expressions and definitions
+- Model Business Domains
+
+## Basics
+### Elements of Programs
 
 A program **expresses** a **computation**. For instance: What is the result of adding one to one?
 
@@ -70,8 +78,7 @@ In summary:
 - Programs *express* computations.
 - Programs are made of *values* combined together with *operations*.
 - Intermediate results can be *named* to be easily reused.
-
-## Types
+### Types
 Types are the rules to get expressions together. So, expressions have types. In the next example we will highlight an error:
 
 ```scala
@@ -132,7 +139,7 @@ In summary:
 - Before a Scala program is executed, the compiler check that it is well typed.
 - The compiler is usually able to infer the types of the definitions of a program, but you can add them explicitly to improve code readability.
 
-## Methods and Parameters
+### Methods and Parameters
 
 Lets check how we can applay the same program to different input values by defining methods that get parameters.
 
@@ -213,7 +220,7 @@ In summary, parameters allow us to:
 
 **Blocks** let us write intermediate definitions befor returnin a result. Definitions that are inside the block are not visible outside of the block.
 
-## Variables
+### Variables
 
 For mutable values:
 
@@ -245,7 +252,7 @@ lazy val y = 500
 y: int = <lazy>
 ```
 
-## String Interpolation
+### String Interpolation
 
 The string interpolation is when a define variable in a given string return its value.
 
@@ -272,7 +279,7 @@ object HelloWorld {
 }
 ```
 
-## Conditions
+### Conditions
 
 Conditions are a way to manage alternative branches of computations. Let us say that we want to show the price of the paint to buy. As long as that price is lower than 100 euros, we shouw it, otherwise we show a message "This is too expensive"
 
@@ -307,7 +314,7 @@ def showPrice(paintingArea: Double, paintPrice: Double): String {
 
 In summary, alternative branches of computations can be implemented by using if expressions.
 
-## Evalauting Definitions
+### Evalauting Definitions
 
 Lets recall a subtle difference between `def` and `val` definitions. It is possilbe to define methods that take no parameters, then what is the difference between those two definitions?
 
@@ -363,7 +370,7 @@ So, this modeling is a fight to find the right level of abstraction. One could o
 
 To summarize, the act of defining, in a program, the concept of domain that map closely our human reasoning is called **modeling**.
 
-## Case Classes
+### Case Classes
 
 Lets evaluates a concept that aggregates several concepts together. The concep of a _rectangle_ , which is defined by a _width_ and a _height_, can be modeled as follows in Scala:
 
@@ -424,7 +431,7 @@ We will discuss later how to create mutable data types, and what their tradeoffs
 
 In summary, a _case class_ aggregates several concepts togehter in a new type, and them define immutable data types.
 
-## Sealed Traits
+### Sealed Traits
 
 Let's learn about the second tool for modeling bussines domains, _sealed traits_.
 
@@ -492,7 +499,7 @@ These two building blocks can be used to _model_ bussines domains.
 
 _Match_ expressions can be used to define alternative _branches_ of a program according to the concrete class of a sealed trait, and to _extract_ data from this class at the same time.
 
-## Enumerations
+### Enumerations
 
 Sometime the alternatice values of a type are not _classes_ of values, but singleton values. Scala 3 provides a special construct for this case:
 
@@ -573,7 +580,7 @@ In summary, `enum` is a convenient construct for modeling a type that has one of
 
 An enumeration defines a type and its companion object which in turn defines the possible values of the enumeration, and additional operations such as `values` and `valueOf`.
 
-## Business Logic
+### Business Logic
 
 Previously were introduced language features such as:
 
@@ -602,3 +609,7 @@ In summary, reify the concepts (nouns) of a business domain into case clases and
 Check that values derived from your model are valid by construction and that they are meaningful for your problem.
 
 Implement the business logic as operations on your model.
+
+## Assestment
+
+Fireworks, please check the contents is in `exercises/fireworks`.
