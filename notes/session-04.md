@@ -128,6 +128,85 @@ The example with `windowSide` and `windowArea` was a bit simplistic. But in larg
 
 ### A Case for Side-Effects
 
+In this section let's discuss the trade-off of alternatives to side-effects. 
+
+Previously, we have seen that side-effecting operations have drawbacks that requires developers to manipulate them with extra care, but *why do we have side-effects at all?*
+
+Let's try to implement a random number generator without using side-effects.
+
+```scala
+class Generator(previous: Int):
+    def nextInt(): (Int, Generator) =
+        val result = previous * 22_695_477 + 1
+        (result, Generator(result))
+    end Generator
+
+object Generator:
+    def init: Generator = Generator(42) // We use a linear congruential generator.
+```
+
+The operation `nextInt` returns a random `Int` value and the next `Generator` to use:
+
+```scala
+val gen1 = Generator.init
+val (x, gen2) = gen1.nextInt()
+println(x) // 953210035
+val (y, _) = gen1.nextInt()
+println(y) // 953210035
+val (z, gen3) = gen2.nextInt()
+println(yz // -570911984
+```
+
+The `between` operation can be implemented in the class `Generator`:
+
+```scala
+def between(x: Int, y: Int): (Int, Generator) =
+    val min = math.min(x, y)
+    val delta = math.abs(x - y)
+    val (randomValue, nextGenerator) = nextInt()
+    ((randomValue % delta) + min, nextGenerator)
+```
+
+Then, the random number generator can bbe used like this:
+
+```scala
+val gen1 = Generator.init
+val (windowSide, _) = gen1.between(1,4) // windowSide = 2
+val windowArea = windowSide * windowSide // : Int = 4
+```
+
+However, one drawback of this approach is that we must be careful to use each generator **only once**. The problem becomes worse if several parts of our program use random number generators.
+
+```scala
+val gen1 = Generator.init
+getSomething(gen1, getSomeOtherThing(gen1))
+```
+
+Here, by passing `gen1` at two places we will get same random numbers in both places.
+
+The correct way to use our random number generator is the following:
+
+```scala
+val gen1 = Generator.init
+val (otherThin, gen2) = getSomeOtherThing(gen1)
+
+getSomething(gen2, otherThing)
+```
+
+The method `getSomeOtherThing` needs to also return the next generator to use. When we call `getSomething`, we must be careful to use `gen2` and not `gen1`, of course.
+
+Arguably, this is more tedious to write than using the side-effecting number generator:
+
+```scala
+getSomething(getSomeOtherThing())
+```
+
+To summarize, "pure" alternatives to side-effect introduce accidental complexity by requiring developers to explicitly carry over the "context" they operate on.
+
+Some techniques exist to simplify this task, but they always come with some constraints.
+
+There is no silver bullet, just choose the approach that works best for you by taking into account their pros and cons.
+
 ### Mutable Objects
 
 ## Testing
