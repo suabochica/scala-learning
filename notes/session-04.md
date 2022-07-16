@@ -209,6 +209,113 @@ There is no silver bullet, just choose the approach that works best for you by t
 
 ### Mutable Objects
 
+The key difference between case classes and regular classes is that regular classes have a notion of identity that changes the way instances are compared together. 
+
+Previously we have seen how to implement a "pure" random number generator. Let's see how to implement a random number generator that uses side-effects.
+
+```scala
+object Generator:
+  var previous: Int = 42
+
+  def nextInt(): Int =
+    val result = previous * 22_695_477 + 1
+    previous = result
+    result
+end Generator
+```
+
+The key changes in this version is the use of `var` in the `previous` variable an the update of `previous` to `result` each time we generate a new value. With these specs the object `Generator` is a **mutable object**, it has a state tht may change over the time.
+
+Here is an example of mutable class that models a bank account:
+
+```scala
+class BankAccount:
+  private var balance: Int = 0
+  def deposit(amount: Int): Int = 
+    if amount > 0 then balance = balance + amount
+    balance
+  
+  def withdraw(amount: Int): Int = 
+    if amount > 0 && amount <= balance then
+      balance = balance - amount
+    balance
+end BankAccount
+```
+
+Below is the use of the bank account
+
+```scala
+val account = BankAccount()
+
+account.deposit(30) // 30
+account.deposit(30) // 60
+account.withdraw(50)// 10
+```
+
+Mutable clases raise a new problem: what does it mean for two instances to be equal?
+
+In an immutable world, if we write:
+
+```scala
+val x = Rectangle(5, 8)
+val y = Rectangle(5, 8)
+```
+
+Then, we expect `x == y` to be true.
+
+More generally, in an immutable world if we write:
+
+```scala
+val x = E
+val y = E
+```
+
+where `E` is an arbitraty expression, then we expect that `x` and `y` are the same. That is to say that we could refactor the program to:
+
+```scala
+val x = E
+val y = x
+```
+
+without changing the meaning of the program.
+
+But once we use mutable objects, the situation is different. For example:
+
+```scala
+val x = BankAccount()
+val y = BankAccount()
+```
+
+Are `x` and `y` the same bank account? The answer is no. Even if two bank accounts may have the same balance at one point in time, they are still two different bank accounts
+
+By default, Scala already does "the right thing": comparing two instances of `BankAccount` with the same blance will return `false`, but comparing two instances `Rectangle` with the same lenght and width will return true.
+
+This highlights one key difference between plain classes and case classes: plain classes equality is checked by comparing the "identity" of their instances, whereas cases classes equality is checked by comparing the values carried by their instances.
+
+As consequence objects are not "refactoring-proof": we cannot replace:
+
+```scala
+val x = E
+val y = E
+```
+
+with
+
+```scala
+val x = E
+val y = x
+```
+
+without changing the meaning of our program.
+
+Therefore, it is a good practice to prefer immutable data types (for instances, immutable collections).
+
+To summarize, we have seen that mutable objects are objects whose internal state can vary over time.
+
+Consequently, distinct instances of mutable classes are not the *same*, even though they may carry the same values at one point in time. We say that they have distinct **identities**.
+
+It is a good practice to prefer working with immutable data types.
+
 ## Testing
 
 ### Unit Testing
