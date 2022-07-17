@@ -318,7 +318,92 @@ It is a good practice to prefer working with immutable data types.
 
 ## Testing
 
+It is time to check how to increase your confidence in the code that you write, and validate that it does what you expect by writing unit tests.
+
 ### Unit Testing
+
+How do we make sure that the program we wrote does what we intended?
+
+*Reading* the source code of the program can consolidate our understanding of what it does. However, it may work fine for small and concrete things but it requires a lot of effort to reason about the whole program or very abstract code.
+
+The *type system* can help us by ensuring that program parts are correctly combined together. However, it relies on the assumption that we correctly model things in the first place. Also, only a small class of errors can be caught by the type system.
+
+Software is soft. Code bases evolve over time and by changing small things here and there, we sometimes change the behavior of the program under certain conditions in a breaking way. So, we need robust ways to prevent these regressions to happen. In this video and the following ones
+
+We have different testing techniques that we can use to  increase our confidence that the code we have written matches our initial intent.
+
+Unfortunately, it is very hard to reach a 100% confidence level. All the techniques have different trade offs in terms of costs, coverage, and robustness.
+
+The simplest way to test the program is to write another program that calls the program under test with parameters for which we know what the expected results should be. This technique is called **unit testing**.
+
+Let's test the following program:
+
+```scala
+// File src/bain/scala/testing/Program.scala
+
+/** @return the sum of 'x' and 'y' */
+def add(x: Int, y: Int): Int = ...
+
+/** @return the 'n'th Fibonacci number (the first number is 0) */
+def fibonacci(n: Int): Int = ...
+```
+
+In sbt projects tests go to the `src/test/scala/directory` (as opposed to `src/main/scala` for the sources of the program).
+
+It is common practice to use tests with names that mirror the names of the tested programs.
+
+For our example, we want to test a program return in the file program.scala. So we write a test suite in the file `src/test/scala/testing/ProgramSuite.scala`.
+
+There are several testing libraries in Scala. Here, we show you how to get started with MUnit, a simple testing library.
+
+Add the following settings to your `build.sbt` file.
+
+```scala
+libraryDependencies += "org.scalameta" %% "munit"% "0.7.19" % Test
+testFrameworks += new TestFramework("munit.Framework")
+```
+
+Now let's define a test suite. A test suite is a class that extends `munit.FunSuite`
+
+```scala
+class ProgramSuite extends munit.FunSuite:
+
+  test("add") {
+    // TODO Write test specification for the 'add' method
+  }
+  
+  test("fibonacci") {
+    // TODO Write test specification for the 'fibonacci' method
+  }
+  
+end ProgramSuite
+```
+
+Next step is write the test specification. Here we use the `test` and `assertEquals` methods, inherit from `munint.FunSuite`.
+
+```scala
+class ProgramSuite extends munit.FunSuite:
+
+  test("add") {
+    val obtained = add(1, 1)
+    val expected = 2
+    assertEquals(obtained, expected)
+  }
+  
+end ProgramSuite
+```
+
+We give a name to the test specification (here, "add"), and we write the implementation in a second argument.
+
+Finally we should run the test suite and wait for the report. We can run the test from the code editor or via sbt shell with the next command:
+
+```
+sbt test
+```
+
+To summarize, writing tests can increase your level of confidence in the fact that your program behaves as expected. Furthermore, tests are a good way to prevent regressions.
+
+Unit tests let you check the result of a program for some specific inputs. However, you have to think about all the corner cases to check
 
 ### Property-Bases Testing
 
