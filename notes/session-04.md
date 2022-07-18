@@ -407,6 +407,87 @@ Unit tests let you check the result of a program for some specific inputs. Howev
 
 ### Property-Bases Testing
 
+Let's review an alternative way of writing tests that helps to increase the coverage of the tested domain, and to discover edge cases.
+
+In the fibonnaci example, we define 5 cases for the unit test created. Is it enough to check 5 cases to conclude that the implementation is correct?
+
+Writing each test example takes a bit of time. Generally, program domains are huge and it would be impossible to write test cases manually for the whole domain space. You can make the effort of writing test for all use edge cases, but you would still miss a lot of cases.
+
+Another approach is to generate random input data.
+
+How we can specify the expected result of calling a program with data that we do not know?
+
+You can only specify general **properties** that must be correct for all possible inputs or a well delimited subset.
+
+In the case of the Fibonacci method, an example of property that we want to check is this Identity. The fact that any Fibonacci number is the sum of the two previous Fibonacci numbers, which is the definition of Fibonacci suite.
+
+ScalaCheck is a library for doing property-based testing. It integrates with MUnit so that you only need to add the following dependency to the `built.sbt`:
+
+
+```scala
+libraryDependencies += "org.scalameta" %% "munit-scalacheck" % "0.7.19" % Test
+testFrameworks += new TestFramework("munit.Framework")
+```
+
+A test suite containing properties is a class that extens `munit.ScalaCheckSuite`:
+
+```scala
+package testing
+
+class ProgramProperties extends munit.ScalaCheckSuite:
+
+  property("fibonacci(n) == fibonaci(n - 1) + fibonacci(n - 2)") {
+    ...
+  }
+  
+end ProgramProperties
+```
+
+You define properties by calling the method `property` in the body of the class. This method receive as first parameter the name of the property test, and the second parametera is the block that contains the definition of the property tick. Lets write the second parameter for our property test.
+
+```scala
+import org.scalacheck.Prop.forAll
+
+class ProgramProperties extends munit.ScalaCheckSuite:
+
+  property("fibonacci(n) == fibonaci(n - 1) + fibonacci(n - 2)") {
+    forAll() { (n: Int) =>
+      fibonacci(n) == fibonacci(n - 1) + fibonacci(n - 2)
+    }
+  }
+  
+end ProgramProperties
+```
+
+The method `forAll` takes as a parameter a function that receives an arbitrary value (here `n` of type `Int`), and returns a `Boolean` as result. In this example, we check that Fibonacci of `n` is equal to Fibonacci of `n -1` plus Fibonacci of `n - 2`.
+
+You can run property-based tests like usual test suites by clicking on the test button just above the class definition. 
+
+If we run this property test we got an error in the report when we evaluate the case for `1`. The problem here is that there is no zero element or minus one element in the Fibonacci sequence. The first element of the Fibonacci sequence has index one. Indices below one are just invalid. We should exlude such input values from the test, or, we could narrow the input type of the `fibonacci` method: It currently takes an `Int`, we could replate it with a type `PosInt` whose values would be guarenteed to be always greater than zero.
+
+
+```scala
+import org.scalacheck.Prop.forAll
+
+class ProgramProperties extends munit.ScalaCheckSuite:
+
+  val fibonacciDomain = Gen.choose(1, 47)
+  
+  property("fibonacci(n) == fibonaci(n - 1) + fibonacci(n - 2)") {
+    forAll(fibonacciDomain.suchThat(_ >= 3)) { (n: Int) =>
+      fibonacci(n) == fibonacci(n - 1) + fibonacci(n - 2)
+    }
+  }
+  
+end ProgramProperties
+```
+
+The differnece with the previous version is that we add the variable `fibonacciDomain` indicating the range of numbers that we want test with the property.
+
+Good properties may be hard to find or formulate. You should look for **invariants** like also Fibonacci numbers up positive and **identities** like Fibonacci of n to be equal to Fibonacci of n minus one plus Fibonacci of n minus two. You can learn more about this in the talk, "Much Ado About Testing" by Nikola Rinaudo, which you can find online.
+
+To summarize, property-based testing makes it easier to increase the coverage of the tested domain and helps to find edge cases. In our case, we were able to find the limit of our implementation of Fibonacci. However, good properties can be hard to find. Be careful to not re-implement the system under test.
+
 ### Mocking
 
 ### Integration Testing
