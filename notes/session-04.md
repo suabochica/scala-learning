@@ -490,6 +490,59 @@ To summarize, property-based testing makes it easier to increase the coverage of
 
 ### Mocking
 
+Let's check a simple approach to mock components when you write a test.
+
+In a system made of components that depend on other components, how do we test just one component without having to also set up all the components that it depends on?
+
+```mermaid
+classDiagram
+    HttpServer --|> DatabaseAccess
+    DatabaseAccess: +Connection connection
+      DatabaseAccess: +readData()
+    
+```
+in this example, we have an HTTP server that depends on database access component, which is responsible for communicating with the database.
+
+So, the anwser of the previous question is mock the component that are depended on. For our example we would mock the `DatabaseAccess` component
+
+Mocking consists in providing a fake implementation of a component that can be substituted to the component for the purpose of a test. 
+
+We have already seen how to design components are easier to mock, lets recall the example:
+
+```mermaid
+classDiagram
+    HttpServer --|> IDatabaseAccess
+    IDatabaseAccess <|-- PersistentDatabase
+    IDatabaseAccess <|-- InMemoryDatabase
+    IDatabaseAccess: +readData()
+    PersistentDatabase: +Connection connection
+    PersistentDatabase: +readData()
+    InMemoryDatabase: +readData()
+```
+
+Here, we would define a trait database access with two implementations. The persistent database, which we would use in the real application, and the in-memory database that we would use in the tests.
+
+In the test In the tests, we would wire the database access component to an instance of an in-memory database. 
+
+```scala
+class HttpServerSuite extends munit.FunSuite:
+  val databaseAccess = InMemoryDatabase()
+  val httpServer = HttpServer(databaseAccess)
+
+  test("something") {
+    ...
+  }
+
+class InMemoryDatabase extends DatabaseAccess:
+  ...
+```
+
+Unfortunately, in some cases this solution is not applicable. For instance, if the operations of the interface to implement are too numerous or too complicated.
+
+In this situation, you can use a mocking library such as ScalaMock. Such libraries make use of advanced techniques available on the JVM to create fake component implementations. Mastering these techniques is out of the scope of this posts.
+
+To summarize, mocking components makes it easier to set up tests. The test may run faster and the test outcome cannot be influenced by a bug in a dependency of the tested component. However, beware that this technique does not test the whole system as it will be deployed to production.
+
 ### Integration Testing
 
 ### Testing the Tests
