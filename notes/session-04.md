@@ -544,6 +544,47 @@ In this situation, you can use a mocking library such as ScalaMock. Such librari
 To summarize, mocking components makes it easier to set up tests. The test may run faster and the test outcome cannot be influenced by a bug in a dependency of the tested component. However, beware that this technique does not test the whole system as it will be deployed to production.
 
 ### Integration Testing
+Time to review how to set up and shut down resources during the lifetime of a test execution.
+
+Testing the parts of a system in isolation is good, but new problems can arise when we assemble the parts together. Integration testing is the practice of testing a complete system with no stubs or mocks. 
+
+ What makes integration testing complex is that you need to be able to programmatically set up the entire stack, or significant part of it, to a specific state. According to your test scenario, this sometimes includes setting up external services that your program depends on, such as a database. 
+
+MUnit lets you set up and shut down a resource for the lifetime of a single test. Lets review this with  an example to set up an HTTP server:
+
+```scala
+class HttpServerSuite extends munit.FunSuite:
+  val withHttpServer = FunFixture[HttpServer](
+    setup = test => {
+      val httpServer = HttpServer()
+      httpServer.start(8888)
+      httpServer
+    },
+    teardown = httpServer => httpServer.stop()
+  )
+
+  withHttpServer.test("server is running") { httpServer =>
+    // Perform HTTP request here
+  }
+```
+Sometimes it's considerably more performant to set up the stack once at the beginning, then *ran all the tests* and eventually shut down the system. We achieved that by overriding the methods `beforeAll` and `afterAll` of the `FunSuite` class.
+
+```scala
+class HttpServerSuite extends munitFunSuite:
+  val httpServer = HttpServer()
+  override def beforeAll(): Unit = httpServer.start(8888)
+  override def afterAll(): Unit = httpServer.stop(8888)
+
+  test("server is running") {
+
+  }
+
+  test("another test on HTTP server") {
+
+  }
+```
+
+To summarize Integration Tests are interesting because they make the system closer to what is deployed to production. On the other hand, such test can be heavier to write, or they can take a long time to complete. Here, you have seen how to write test that required to set up and then shut down some resources.
 
 ### Testing the Tests
 
