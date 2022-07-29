@@ -97,32 +97,65 @@ object PersistentModel extends Model:
    * (The InMemoryModel uses the same.)
    */
 
-  def create(task: Task): Id =
-    ???
+  def create(task: Task): Id = {
+    val tasks = loadTasks()
+    val id = loadId()
 
-  def read(id: Id): Option[Task] =
-    ???
+    saveTasks(Tasks(tasks.toMap + (id -> task)))
+    saveId(id.next)
+    id
+  }
 
-  def update(id: Id)(f: Task => Task): Option[Task] =
-    ???
+  def read(id: Id): Option[Task] = {
+    val tasks = loadTasks()
+    
+    tasks.toMap.get(id)
+  }
 
-  def delete(id: Id): Boolean =
-    ???
+  def update(id: Id)(f: Task => Task): Option[Task] = {
+    val tasks = loadTasks().toMap
+    val updatedTasks = tasks.map{(itemId, itemTask) =>
+      if itemId == id then
+        itemId -> f(itemTask)
+      else
+        itemId -> itemTask
+    }
 
-  def tasks: Tasks =
-    ???
+    saveTasks(Tasks(updatedTasks))
+    updatedTasks.get(id)
+  }
 
-  def tasks(tag: Tag): Tasks =
-    ???
 
-  def complete(id: Id): Option[Task] =
-    ???
+  def delete(id: Id): Boolean = {
+    val tasks = loadTasks().toMap
 
-  def tags: Tags =
-    ???
+    saveTasks(Tasks(tasks - id))
+    tasks.isDefinedAt(id)
+  }
+
+  def tasks: Tasks = {
+    loadTasks()
+  }
+
+  def tasks(tag: Tag): Tasks = {
+    val tasks = loadTasks().toMap
+
+    Tasks(tasks.filter((id, task) => task.tags.contains(tag)))
+  }
+
+  def complete(id: Id): Option[Task] = {
+    update(id)(task => task.copy(state = State.completedNow))
+  }
+
+  def tags: Tags = {
+    val tasks = loadTasks().toMap
+
+    Tags(tasks.flatMap((id, task) => task.tags).toList.distinct)
+  }
 
   /**
   * Delete the tasks and id files if they exist.
   */
-  def clear(): Unit =
-    ???
+  def clear(): Unit = {
+    saveTasks(Tasks.empty)
+  }
