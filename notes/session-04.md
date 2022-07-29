@@ -588,6 +588,16 @@ To summarize Integration Tests are interesting because they make the system clos
 
 ### Testing the Tests
 
+Let's how to asses the process of writing test itself. For that we have to answer questions like How can we make sure that the test we have written are correct in the first place? How can we assess the quality of the test? Should we write tests for the tests?
+
+*Test coverage* reports the cut path that are untested. This is good, but it does not tell you if your input domain is well-covered, nor if your existing tests are correct. In Scala, you can enable test coverage by using the compiler plugin `scoverage`.
+
+One way to check that a test is robust is to introduce a bug in a program and check that the test catches the bug.
+
+In Scala, we do it the other way around by implementing a test before implementing a bug fix. By running the test and the not-yet fixed program, you can check that the bug is present, and then you can check that you effectively fixed the bug by running the test again after. 
+
+To summarize in this video, an important question is, why should we trust programs with the task of checking that other programs are correct? Keep in mind that tests are code too. They need to be maintained, and they may have bugs.
+
 ### Debugging
 
 ## Assestment
