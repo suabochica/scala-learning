@@ -600,6 +600,92 @@ To summarize in this video, an important question is, why should we trust progra
 
 ### Debugging
 
+Let's review how to debug a program with a debugger.
+
+Debuggers allow you to execute your program step-by-step and to interact with the values constructed by the program. They are a great tool to understand why an algorithm eventually produces the result it produces.
+
+Let's use an example de Fibonacci code:
+
+```scala
+object Example
+
+@main def run(): Unit
+  println(fibonacci(1))
+  println(fibonacci(2))
+  println(fibonacci(3))
+  println(fibonacci(4))
+  println(fibonacci(5))
+  println(fibonacci(6))
+
+
+def fibonacci(n: Int): Int =
+  var previousResult = 0
+  var result = 1
+  var i = 1
+
+  while i < n do
+    result = result + previousResult
+    previousResult = result
+    i = i + 1
+
+  result
+```
+
+However, this implementation is not correct. When we run the implementation the output is:
+
+```
+1
+1
+2
+4
+8
+16
+```
+
+We see that the three first values are correct, but the fourth one is wrong. Let's debug the code with the next instructions:
+
+1. Set a break point in the program (e.g. line 5)
+2. Select the option "Debug Run"
+
+If we debug the program now the execution will pull at that point. Now we can see how the progam is executed line by line. The editor enable the next controls to interact with the debuggin session:
+
+- Step over, to move to the next line
+- Previous step, to move to the previous line
+- Step into, to enter into the function implementation
+- Step out, to go out of the function inspected
+
+After debug the `fibonnaci` function we notice that the error is in the `perviousResult = result` assignation. To fix the code, we have to add an temporal variable to store the current value of result, and assing the previous result value to the temporal variable. The next code consider the mentioned fix:
+
+```scala
+def fibonacci(n: Int): Int =
+  var previousResult = 0
+  var result = 1
+  var i = 1
+
+  while i < n do
+    val tmp = result
+    result = result + previousResult
+    previousResult = tmp
+    i = i + 1
+
+  result
+```
+
+Now if we run the program again we get:
+
+```
+1
+1
+2
+3
+5
+8
+```
+
+That is the expected result.
+
+In summary, we saw how to set a break point, how to execute a program line-by-line, how to step into the body of a method, and how to interact with the program state.
+
 ## Assestment
 
 Quickcheck, please check the contents is in `exercises/quickcheck`.
