@@ -11,6 +11,8 @@
 **/target
 **/project/project
 
+*.metals/metals.mv.db
+
 examples/week_1/project/metals.sbt
 examples/week_2/project/metals.sbt
 examples/week_3/project/metals.sbt
@@ -19,3 +21,4 @@ examples/week_4/project/metals.sbt
 
 exercises/fireworks/project/metals.sbt
 exercises/democracy/project/metals.sbt
+exercises/todo/project/metals.sbt

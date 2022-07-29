@@ -19,7 +19,7 @@ object InMemoryModel extends Model:
   )
 
   /* Every Task is associated with an Id. Ids must be unique. */
-  private val idGenerator = IdGenerator(Id(3))
+  private val idGenerator = IdGenerator(Id(defaultTasks.length))
 
   /* The idStore stores the associated between Ids and Tasks. We use a
    * LinkedHashMap so we can access elements in insertion order. We need to keep
@@ -34,29 +34,34 @@ object InMemoryModel extends Model:
 
   def create(task: Task): Id =
     val id = idGenerator.nextId()
+    idStore += id -> task
     id
 
   def read(id: Id): Option[Task] =
     idStore.get(id)
 
   def complete(id: Id): Option[Task] =
-    None
+    update(id)(task => task.copy(state = State.completedNow))
 
   def update(id: Id)(f: Task => Task): Option[Task] =
     idStore.updateWith(id)(opt => opt.map(f))
 
   def delete(id: Id): Boolean =
     var found = false
+    idStore.remove(id) match {
+      case Some(_) => found = true
+      case None => found = false
+    }
     found
 
   def tasks: Tasks =
     Tasks(idStore)
 
   def tags: Tags =
-    Tags(List.empty)
+    Tags(idStore.flatMap((id, task) => task.tags).toList.distinct)
 
   def tasks(tag: Tag): Tasks =
-    Tasks(idStore)
+    Tasks(idStore.filter((_._2.tags.contains(tag))))
 
   def clear(): Unit =
     idStore.clear()
