@@ -80,7 +80,7 @@ def sort[A](xs: List[A])(ord: Ordering[A]): List[A] =
     ...
 ```
 
-However, passing aroud Ordering arguments is cumbersome.
+However, passing around Ordering arguments is cumbersome.
 
 ```scala
 sort(xs)(Ordering.Int)
@@ -93,6 +93,62 @@ Sorting a `List[Int]` value always use the same `Ordering.Int` argument, sorting
 Simple cases like these are repetitive and tedious. Complex cases like sorting by multiple criteria are really painful to maintain. Can the compiler automate this process for us? Can it find the ordering instance and pass it to the method code?
 
 ### Context Parameters
+
+To solve our previous problem of passing around Ordering arguments let's learn how to instuct the compiler to pass parameter for us by defining them as context parameters.
+
+So, we would like to just write:
+
+```scala
+sort(xs)
+```
+
+And let the compiler pass the ordering for us. To achieve this we need to do two things:
+
+1. let the compiler know that we expect it to pass the argument,
+2. provide candidate values for such arguments
+
+In this section we will address the first point
+
+We let the compiler know that we expect it to pass the `ord` argument by making it a **context parameter**.
+
+```scala
+def sort[A](xs: List[A])(using ord: Ordering[A]): List[A] = ...
+```
+
+Then calls to sort can omit the `ord` argument:
+
+```
+sort(xs)
+sort(ys)
+sort(strings)
+```
+
+The compiler infers the argument value based on its expected type. Later we will explain the mechanism used by the compiler to find the respective `Ordering` value.
+
+
+Note that it is still possible to explicitly pass an argument via a `using` argument clause, which can be usefull to provide a non-default value:
+
+```scala
+sort(xs)(using Ordering.Int.reverse)
+```
+
+But the argument is usually left out. For reference, multiple context parameters can be in a `using` clause, or can be several `using` clauses in a row. Additionally, `using` clauses can also be freely mxed with regural parameters.
+
+For other side, the parameters of a `using` caluse can be anonymous. This is useful if the body of `sort` does not mention `ord` at all, but simply passes it on as a context argument to further methods.
+
+There is a shorter syntax for context parameters:
+
+```scala
+def sort[A: Ordering](xs: List[A]): List[A] = ...
+```
+
+We say that the type parameter `A` has one **context bound**: `Ordering`. This is equivalent to the following signature:
+
+```scala
+def sort[A](xs: List[A])(using ord: Ordering[A]): List[A] = ...
+```
+
+In Summary, parameters marked by a `using` clause can be left out at the call site. The compiler infers their value based on their expected type.
 
 ### Given Definitions
 
