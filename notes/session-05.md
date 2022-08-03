@@ -152,6 +152,32 @@ In Summary, parameters marked by a `using` clause can be left out at the call si
 
 ### Given Definitions
 
+Let's explain how to define candidate values that can be picked by the compiler when you call a method that takes context parameters.
+
+Here is a complete example:
+
+```scala
+trait Ordering[A]:
+    def compare(a1: A, a2: A): Int
+
+// companion object
+object Ordering:
+    given Int: Ordering[Int] with
+        def compare(x: Int, y: Int): Int = ...
+    given String: Ordering[String] with
+        def compare(s: String, t: String): Int = ...
+
+def sort[A](as: List[A])(using Ordering[A]): List[A] = ...
+
+sort(List(1, 3, 2)) // : List[Int] = List(1, 2, 3)
+sort(List("banana", "apple")) // : List[String] = List("apple", "banana")
+```
+
+
+In summary, there has to be a **unique** given instance matching the queried type for it to be used by the compiler as a context argument. 
+
+Given instances are searched in the enclosing **lexical scope** (import parameters or inherited members) as well as in **companion object** of types associated with the query type.
+
 ### Priorities Between Given Definitions
 
 ### Type Classes
