@@ -125,7 +125,6 @@ sort(strings)
 
 The compiler infers the argument value based on its expected type. Later we will explain the mechanism used by the compiler to find the respective `Ordering` value.
 
-
 Note that it is still possible to explicitly pass an argument via a `using` argument clause, which can be usefull to provide a non-default value:
 
 ```scala
@@ -154,7 +153,7 @@ In Summary, parameters marked by a `using` clause can be left out at the call si
 
 Let's explain how to define candidate values that can be picked by the compiler when you call a method that takes context parameters.
 
-Here is a complete example:
+Here is a complete example with the `given` keyword over the `Int` . and `String` types:
 
 ```scala
 trait Ordering[A]:
@@ -173,12 +172,138 @@ sort(List(1, 3, 2)) // : List[Int] = List(1, 2, 3)
 sort(List("banana", "apple")) // : List[String] = List("apple", "banana")
 ```
 
+One can refer to a named or anonymous instance by its type using the `summon` keyword:
+
+```scala
+summon[Ordering[Int]]
+summon[Ordering[Double]]
+```
+
+These expand to:
+
+```scala
+Ordering.Int
+Ordering.given_Ordering_Double
+```
+
+`summon` is a predifined method. It can be defined like:
+
+```scala
+def summon[T](using arg: T): T = arg
+```
+
+If we define a function takes a context parameter of type `T`, then the compiler will search a given instance that:
+
+- has a type compatile with `T`
+- is visible at the point of the methods call, or is defined in a companion object associated with `T`.
+
+If there is a single definition, it will be taken as actual arguments for the context parameter. Otherwise, it is an error. Below we illustrate the visibility of given instances:
+
+```scala
+class Foo
+
+trait Givens: given Foo = Foo()
+    given[Foo]
+
+    summon[Foo] // ✔, is defined in the enclosing scope
+
+object Givens extends Givens:
+    summon[Foo] // ✔, is inherited from the train Givens
+
+summon[Foo] // ✘, no given instances were found that match type Foo
+
+import Givens.{given Foo}
+summon[Foo] // ✔, given Foo is imported
+```
+
+Since given instance can be anonymous, there are three ways to import them:
+
+1. By name: `import scala.math.Ordering.Int`
+2. By type: `import scala.math.Ordering.{given Ordering[Int]`
+3. With a given selector: `import scala.math.Ordering.given`
+
+Here the second form of import is preferred because it is most informative.
+
+The scope of a search for a given instance of type `T` includes:
+
+- first, all the given instance that are visible.
+- then, the given instances found in any companion object *associated* with `T`.
+
+The definition of _associated_ is quite general. Besides, the companion object of the type T itself, the compiler will also consider:
+
+- companion objects associated with any of T's ingerited types,
+- companion objects associated with any type argument in T,
+- if T is an inner class, the outer object in which it is embedded.
+
+If more than one given instance is eligible, an **ambiguity** is reported:
 
 In summary, there has to be a **unique** given instance matching the queried type for it to be used by the compiler as a context argument. 
 
 Given instances are searched in the enclosing **lexical scope** (import parameters or inherited members) as well as in **companion object** of types associated with the query type.
 
 ### Priorities Between Given Definitions
+
+When we work with several given instances that match the same type they don't generate an ambiguity if one instance is more specific than the others. So it is useful understand what it means to be more specific.
+
+A definition `given: a: A` is more specific than a definition `given b: B` if:
+
+- `a` is in a closer lexical scope than `b`,
+- `a` is defined in a class or object which is a subclass of the class defining `b`,
+- type `A` is a subtype of type `B`,
+- type `A` has more "fixed" parts than `B`.
+
+Let's review this rules wiht examples:
+
+```scala
+// Which given instance is summoned here?
+
+given universal[A]: A = ???
+given int: Int ??? // ✔
+
+summon[Int] // The last rule is applied, and `Int` is more fixed than `A`
+```
+
+Second example,
+
+```scala
+// Which given instance is summoned here?
+
+trait A:
+    given x: Int = 0
+
+trait B extends A:
+    given y: Int = 1 // ✔ 
+
+object C extends B:
+    summon[Int] // The second rule is applied.
+```
+
+Third example,
+
+```scala
+// Which given instance is summoned here?
+
+given x: Int = 0
+def foo() =
+    given y: Int = 1 // ✔
+    summon[Int] // The first rule is applied.
+```
+
+Last example,
+
+```scala
+// Which given instance is summoned here?
+class General()
+class Specific() extends General()
+
+
+given general: General = General()
+given specific: Specific = Specific() // ✔
+
+summon[General] // The third rule is applied.
+```
+
+In summary. We have seen that several instances matching the same type don't generate an ambiguity, if one instance is **more specific** than the others, and we have seen what it means to be more specific.
 
 ### Type Classes
 
