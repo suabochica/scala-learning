@@ -307,6 +307,63 @@ In summary. We have seen that several instances matching the same type don't gen
 
 ### Type Classes
 
+
+Time to discuss the two mechanisms to achieve polymorphism, type classes versus sub-typing.
+
+Before we saw a particular pattern of code:
+
+```scala
+trait Ordering[A]:
+    def compare(a1: a, a2: A): Int
+
+object Ordering:
+    given Int: Ordering[Int] with
+        def compare(x: Int, y: Int) =
+            if x < y then -1 else if x > y then 1 else 9
+
+    given String: Ordering[String] with
+        def compare(s: String, t: String) = s.compareTo(t)
+
+def sort[A](xs: List[A])(using Oredering[A]): List[A] = ...
+```
+
+We say that `Ordering` is a **type class**. Type classes support _retroactive_ extension: the ability to extend a data type with new operations without changing the original definition of the data type.
+
+Type classes provide yet another form of polymorfism. In the `sort` example the behavior of the logic varies according to the type of the elements in the list.
+
+At compilation-time, the compiler resolves the specific `Ordering` implementation that matches the types of the list elements.
+
+
+**Subtyping** also provides a way to specialize the behavior of a methods ccording to the type of values it is applied to.
+
+```scala
+trait Comparable:
+    def compareTo(that: Comparable): Int
+
+case class Rational(num: Int, denom: Int) extends Comparable:
+    def compareTo(that: Comparables): Int = ???
+
+def sort(List[Comparable]): List[Comparables] = ???
+```
+
+However, in Scala, type classes are often preferred over subtyping to achieve polymorphism.
+
+Let's compare both alternatives:
+
+```scala
+// Type Class
+trait Ordering[A]:
+    def compare(x: A, y A): Int
+
+// Subtyping
+trait Comparable:
+    def compareTo(that: Comparable): Int
+```
+
+In the first case, we compare `x` to `y`, whereas in the second case we compare `this` to `that`. A type class only defines operations about another type, but it does not define `this` type itself.
+
+In summary, type classes classify types by the operations they support. In Scala, this mechanism is often preferred over sub-typing to achieve polymorphism. One reason for this is that type classes support retroactive extension.
+
 ### Conditionals Given Definitions
 
 ### Type Directed Programming in Scala 2
