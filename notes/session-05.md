@@ -307,7 +307,6 @@ In summary. We have seen that several instances matching the same type don't gen
 
 ### Type Classes
 
-
 Time to discuss the two mechanisms to achieve polymorphism, type classes versus sub-typing.
 
 Before we saw a particular pattern of code:
@@ -365,6 +364,77 @@ In the first case, we compare `x` to `y`, whereas in the second case we compare 
 In summary, type classes classify types by the operations they support. In Scala, this mechanism is often preferred over sub-typing to achieve polymorphism. One reason for this is that type classes support retroactive extension.
 
 ### Conditionals Given Definitions
+
+Given definitions can also take context parameters. This allows the compiler to summon complex pieces of logic solely based on type information. Let's consider the next introductory example, where we will consider the ordering of `String` values:
+
+```
+"abc" < "abd"
+
+1. a | a = same
+2. b | b = same
+3. c | d = c < d
+
+Then, the first string is before the second string
+```
+
+Here, we compare the characters of each string, element-wise. However, we face the next problem: Strings are sequences of characters, how to generalize the comparison process to sequence of any element type `A`?
+
+This can be done only if the list of elements have an ordering. Given definitions can take type parameters and context parameters:
+
+```scala
+given orderingList[A](using ord: Ordering[A]): Ordering[List[A]] with ...
+```
+
+`orderingList` is a _conditional_ definition: an ordering for list with element of type `A` exist only if there is an ordering for `A`.
+
+This sort of conditional behavios is best implemented with type classes. Subtyping and inheritance cannot express this: a class either inherits a trait, or, does not.
+
+The compiler follows the next rule to summoning conditional given instances. A given instances for the outer type is constructed first and then its context parameters are filled in turn. So for the next implementation:
+
+```scala
+given [A: Ordering]: Ordering[List[A]] with
+  def compare(xs: List[A], ys: List[A]): Int = ...
+end given
+
+def sort[A](xs: List[A])(using ord: Ordering[A]): List[A] =
+  def merge(xs: List[A], ys: List[A]): List[A] =
+    ...
+  end merge
+  ...
+end sort
+
+val xss = List(List(1, 2, 3), List(1), List(1, 1, 3))
+```
+
+when we call the sort method, like:
+
+```scala
+sort(xss)
+```
+
+The compiler does:
+
+1. `sort[List[Int]](xss)`: unifies the type parameter A to the List[Int], because that is the type of `xss`
+2. `sort[List[Int]](xss)(using orderingList[Int])`: It finds the given definition `orderingList` after unifying its type parameter A with [Int], but orderingList itself takes a context parameter of type [Int].
+3. `sort[List[Int]](xss)(using orderingList[Int](using Ordering.Int))`: The compiler now looks for a candidate of type ordering of [Int], it finds the given definition ordering that [Int].
+
+For other side, an arbitrary number of conditional definitions can be combined untile the search hits a "terminal" given definition. 
+
+What happens if we define a conditional instance that depends on itself? Like: 
+
+```scala
+trait A 
+given loop(using a: A) : A = A
+
+summon[A]
+```
+
+Here, a loop takes an `a` and provides an `a`. The compiler detects that there is a cycle and it raises an error that says diverging implicit search when trying to match type `A`.
+
+To summarizeL
+- given definitios can also take type parameters and context parameters,
+- an arbitrary number of given definitions can be chained until a terminal definition is reached,
+- this allows the compiler summon complex pieces of logic based on type information.
 
 ### Type Directed Programming in Scala 2
 
