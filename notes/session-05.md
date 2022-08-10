@@ -438,6 +438,64 @@ To summarizeL
 
 ### Type Directed Programming in Scala 2
 
+The previous lectures showed how to define context parameters and given definitions in Scala 3.
+
+Although it was possible to achieve the same thing in Scala 2, the underlying mechanism was different. This page shows how to define the equivalent of context parameters and given definitions in Scala 2.
+
+#### Context Parameters
+
+In Scala 2, we used the keyword `implicit` to mark a parameter list
+as contextual:
+
+```scala
+// Scala 3
+def sort[A](as: List[A])(using ordering: Ordering[A]): List[A]
+
+// Scala 2
+def sort[A](as: List[A])(implicit ordering: Ordering[A]): List[A]
+```
+
+Unlike in Scala 3, in Scala 2 only one parameter list (the last one of the definition) could be marked as contextual.
+
+#### Given Definitions
+
+In Scala 2, the equivalent of given definitions was achieved by marking a regular definition with the qualifier `implicit`:
+
+```scala
+// Scala 3
+given orderingInt: Ordering[Int] with
+  def compare(x: Int, y: Int): Int =
+    if x < y then -1 else if x > y then 1 else 0
+
+// Scala 2
+implicit object orderingInt extends Ordering[Int] {
+  def compare(x: Int, y: Int): Int =
+    if (x < y) -1 else if (x > y) 1 else 0
+}
+// ... or
+implicit val orderingInt: Ordering[Int] = new Ordering[Int] {
+  def compare(x: Int, y: Int): Int =
+    if (x < y) -1 else if (x > y) 1 else 0
+}
+```
+
+Any regular `val`, `def`, or `object` definition could be marked as `implicit`.
+
+Thus, conditional givens were defined by an `implicit def` taking `implicit` parameters:
+
+```scala
+// Scala 3
+given orderingPair[A, B](
+    using ordA: Ordering[A], ordB: Ordering[B]): Ordering[(A, B)] with
+  def compare(x: (A, B), y: (A, B)) = ...
+
+// Scala 2
+implicit def orderingPair[A, B](
+    implicit ordA: Ordering[A], ordB: Ordering[B]): Ordering[(A, B)] = new Ordering[(A, B:wa)] {
+  def compare(x: (A, B), y: (A, B)) = ...
+}
+```
+
 ## Extension Methods and Implicit Conversions
 
 ### Type Classes and Extensions Methods
