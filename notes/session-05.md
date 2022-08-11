@@ -565,6 +565,123 @@ In summary, leverage extension methods to provide a nice syntax to work with typ
 
 ### Implicit Conversions
 
+Time to  learn about a mechanism named **implicit conversions** to automatically convert expressions of one type to another type.
+
+This mechanism is usually used to provide more ergonomic APIs. Let's review the implicit conversion through the next example: API for defining JSON documents.
+
+```scala
+// {"name": "Paul", "age": 42}
+Json.obj("name" -> "Paul", "age" -> 42)
+```
+
+First, define a model for the JSON values
+
+```scala
+sealed trait Json
+
+case class JNumber(value: BigDecimal) extends Json
+case class JString(value: String) extends Json
+case class JBoolean(value: Boolean) extends Json
+case class JArray(elems: List[Json]) extends Json
+case class JObject(fields: (String, Json)*) extends Json
+```
+
+With this definition we can do the next representation
+
+```scala
+// {"name": "Paul", "age": 42}
+JObject("name" -> JString("Paul"), "age" -> JNumber(42))
+```
+
+Check that in the constructor of the `JObject` we use an `*` to represent a repeated parameter. Let's go deep with this concept:
+
+```scala
+def printSquares(xs: Int*) = println(xs.map(x => x * x))
+printSquares(1, 2, ,3) // "Seq(1, 4, 9)"
+```
+
+Here we have that:
+
+- `xs` is a *repeated* parameter,
+- at call site, we can supply several arguments,
+- in the methods body, `xs` has a type `Seq[Int]`,
+- repeated parameters can only appear at the end of a parameter list.
+
+Back into our first representation we got the next problem; the constructing JSON objects is too verbose. We expect to support a shorter sytnax.
+
+We could update the type signature of the `obj` constructor to something like:
+
+```scala
+def obj(fileds: (String, Any)*): Json
+```
+
+but here, we are allowing invalid JSON objects to be constructed. Something like
+
+```scala
+Json.obj("name" -> (x: Int) => x + 1)
+```
+
+will valid.
+
+We want invalid code to be signaled to the programmer with a compilation error.
+
+Definetively, we have to update the `obj` constructor and to invalidate bad formed JSON object we can use type coercion. We can start with:
+
+```scala
+object Json
+    def obj(fields: (String, JsonField)*): Json =
+        JObject(fields.map(_.json)*)
+
+    case class JsonField(json: Json)
+end Json
+```
+
+Then we define implicit conversions from basic types we want to support:
+
+```scala
+case class JsonField(json: Json)
+
+object JsonField:
+    given fromString: Conversion[String, JsonField] with
+        def apply(s: String) = JsonField(JString(s))
+    given fromInt: Conversion[Int, JsonField] with
+        def apply(n: Int) = JsonField(JNumber(n))
+    ...
+    given fromJson: Conversion[Json, JsonField] with
+        def apply(j: Json) = JsonField(j)
+```
+
+To be able to use implicit conversion, we have to inform the compiler of our intent by writting the import clause `import scala.language.implicitConversions`.
+
+```scala
+import scala.language.implicitConversions`
+// {"name": "Paul", "age": 42}
+Json.obj("name" -> "Paul", "age" -> 42)
+```
+
+Then the compiler implicity inserts the following conversions:
+
+```
+Json.obj(
+    "name" -> Json.JsonField.fromString.apply("Paul"),
+    "age" -> Json.JsonField.fromInt.apply(42),
+)
+```
+
+The general rule is that the compiler looks for implicit conversions on an expression `e` of type `T` if `T` does not conform to the expression's expected type `S`. In such case, the compiler looks in the context for a given instance of type `Conversion[T, S]`
+
+> Note: at most one implicit conversion can be applied to a given expression.
+
+We have seen that implicit conversions can be useful to implement nice-looking APIs, but they also have drawbacks. 
+
+Indeed, implicit conversions are silently applied by the compiler and they change the type of expressions. 
+
+Therefore, they can confuse developers reading the code. This is why you need to explicitly add the import clause before using implicit conversions. 
+
+Before defining an implicit conversion, make sure to weigh the pros and cons, reducing boilerplate is a good purpose but this should be balanced with the possible drawbacks of not seeing pieces of code that are yet part of the program.
+
+In summary, implicit conversions can improve the ergonomics of an API, but they should be used sparingly.
+
 ## Assestment
 
 Codecs, please check the contents in `exercises/codecs`
