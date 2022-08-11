@@ -500,6 +500,69 @@ implicit def orderingPair[A, B](
 
 ### Type Classes and Extensions Methods
 
+Let's see how to liberate extension methods to provide a nicer syntax to work with type classes.
+
+Previously we have seen that the type classes could be used t retroactively add operations to existing data types.
+
+However, when the operations are defined outside of the data types, they cannot be called like methods on these data type instances.
+
+```scala
+case class Rational(num: Int, denom: Int)
+given Ordering[Rational] = ...
+
+val x: Rational = ...
+val y: Rational = ...
+
+x > y 
+//^
+// value '>' is not a member of 'Rational'
+```
+
+On the other hand, extension methods make it possible to add methods to a type, outside the type definition.
+
+```scala
+extension (lhs: Rational)
+    def < (rhs: Rational) Boolean =
+        lhs.num * rhs.denom < rhs.num * lhs.denom
+
+val x: Rational = ...
+val y: Rational = ...
+
+x > y  // It works!
+```
+
+Now we have a valid question: How we add the `<` operation to any type `A`  for shich there is a given `Ordering[A]` instance? We achieve it defining the extension method in the trait `Ordering[A]`
+
+```scala
+trait Ordering[A]:
+    def compare(x: A, y: A): Int
+    extension (lhs: Rational)
+        def < (rhs: Rational) Boolean = compare(lhs, rhs) < 0
+```
+
+And then:
+
+```scala
+def sort[A: Ordering](xs: List[A]): List[A] =
+    ...
+    ... if x < y then ...
+    ...
+```
+
+Here we have some rules. Extensions methods on an expresion of type `T` are applicable if:
+
+1. they are visible (by being defined, inherited, or imported) in a scope enclosing the point of the application, or
+2. they are defined in an object associated with the type `T`,or
+3. they are defined in a given instance associated with the type `T`
+
+In our case, the compiler rewrites the call x < y to:
+
+```
+ordering.<(x)(y)
+```
+
+In summary, leverage extension methods to provide a nice syntax to work with type classes. Extension methods are applicable on values of type `T`, if there is a given instance that is visible at the point of application, or that is defined in a companion object associated with `T`.
+
 ### Implicit Conversions
 
 ## Assestment
