@@ -1,4 +1,4 @@
-# Type Directed Programming
+# Session 5: Type Directed Programming
 
 Programs automate repetitive tasks. Sometimes, writing a program is a repetitive task. We look into a unique feature of Scala that lets the compiler write some (repetitive) parts of your programs for you! Based on the expected type of a parameter, the compiler can provide a value for this parameter if it finds an unambiguous candidate value. This technique is often used to automatically generate the serializer and deserializer of a data type, solely based on its definition, for instance.
 
