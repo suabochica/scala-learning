@@ -113,6 +113,52 @@ Those expressions can be followed by a `finally` clause that is executed both if
 In summary, exceptions are a low-level mechanism for dealing with unexpected problems during the program execution. Throwing an exception interrupt the program execution unless the exception is cooked by a handler.
 
 ### Error Handling with Try
+
+Let's review a high level variant of `try/catch` handler, which also provides the benefits of checked exceptions because it explicitly signals the possibility of a failure in type signatures.
+
+We have seen that runing a program may be interrupted in case something unexpected happens an the program throws an exceptions. What should we do about that? In some cases, aborting the program execution is what we want, so there is no need to handle exceptions. However in most cases, we do not want to abort the program execution: Servers need to return a response, long-running programs need to keep running, etc.
+
+In case we need to handle exceptions, shoudl we add `try/catch` handlers around each expression? This *defensive* way of programming would be very inconvenient. One way to address this problem is to explicity model the fact that our program can fail. In the next sections we will introudce different techniques to achieve this. For now, lets check some guides to explicit modeling of failures.
+
+- If exception sare used as a last resort only, there is no need to be defensive, unless we call an API that we know uses exceptions (e.g., some low-level APIS)
+- Just define an exception handler at the beginning og your program, or use the default exceptions handler provided by the runtime.
+- Explicitly indicate in the result type of a method that it can either succeed or fail.
+
+You can explicitly indicate that a method may fail by returning a value of type `Try`:
+
+```scala
+import scala.util.Try
+
+def attemptSomething(): Try[Unit] =
+    Try {
+        println("So far, so good")
+        println("Still there")
+        throw Runtime Exception("We cannot continue")
+        println("You will never see this")
+    }
+```
+
+The type `Try[A]` inform users that the program may fail. A value of type `Try[A]` can either be a `Success[A]`, or a `Failure`.  If an exception is thrown withing a `Try {...}` block, we get a `Failure`, othrewise we get a `Success` containing the result of evaluating the block.
+
+At the use site, onew way to handle errors is by calling the `recover` error method:
+
+```scala
+@main def run(): Unit =
+    attemptSomething
+        .recover {
+            case exn: RuntimeException =>
+                System.err.println(s"Something went wrong: $exn")
+                println("Stopping the program")
+        }
+```
+
+So, we use recover like we would use `catch` in a `try` expression.
+
+
+// TODO: Partial Functions
+
+In summary, the type try makes it explicit that the computation may fail, and it lets you manipulate, successful, result or recover from exceptions. The value of type try can be either a success or failure. It is common practice to use try blocks to wrap calls to API that model failure by throwing exceptions.
+
 ### Manipulating Try Values
 ### Validating Data
 ### Manipulating Validated Values
