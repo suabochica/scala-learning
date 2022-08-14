@@ -154,8 +154,42 @@ At the use site, onew way to handle errors is by calling the `recover` error met
 
 So, we use recover like we would use `catch` in a `try` expression.
 
+Partial functions are functions that may not be defined on all their domain type. For instance, a `PartialFunction[Int, String]` is a function that may not be defined fo some `Int` values. Before applying a partial function to a value, you should check that it is defined for this value by calling `isDefinedAt`:
 
-// TODO: Partial Functions
+```scala
+if somePartialFunction.isDeinedAt(someValue) then
+    somePartialFunction(someValue)
+```
+
+In the previous example, the return type of `attemptSomething`, was `Try[Unit]`, which means that this program may fail but does not retunr a meaning.
+
+Alternatively, consider a program
+
+```scala
+import java.time.LocalDate
+
+def parsseDate(str: String): Tru[LocalDate]
+```
+
+which may fail to return a `LocalDate`. You van use it as follows:
+
+```scala
+import scala.util.{Failure, Success}
+
+parseDate("2022-02-02") match
+    case Success(date) => println("Successfully parsed date")
+    case Failure(throwable) => println("Failed to parse date")
+```
+
+Returning a value of type `Try[A]`, as opposed to returning a value of type `A` is a double edged sword:
+
+- On the one hand, callers of your program won´t be surprised by a possible failure,
+- On the other hand, they will have to deal with failures; the cannot just ignore them an let the program be aborted.
+
+
+Explicit modeling of failures may not always be relevant. It is robably a good choice, though, if the failure is likely to happen (e.g., parsing data, openning file, performing remotes calls).
+
+A typical use case is to wrap a Java API that models failures by throwing exceptions.
 
 In summary, the type try makes it explicit that the computation may fail, and it lets you manipulate, successful, result or recover from exceptions. The value of type try can be either a success or failure. It is common practice to use try blocks to wrap calls to API that model failure by throwing exceptions.
 
