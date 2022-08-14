@@ -194,6 +194,100 @@ A typical use case is to wrap a Java API that models failures by throwing except
 In summary, the type try makes it explicit that the computation may fail, and it lets you manipulate, successful, result or recover from exceptions. The value of type try can be either a success or failure. It is common practice to use try blocks to wrap calls to API that model failure by throwing exceptions.
 
 ### Manipulating Try Values
+Lets review the most common high-level operations to use to manipulate values of type `Try`.
+
+For instance, consider a situation where you want to read two dates from `String` values, and compute the duration between theme. Parsing a date is an operation that may fail, but for this case we do not to deal with the failures yet, lets to focus on the case where both dates were successfully parsed. Please check the contents in `examples/week_6/src/main/scala/org/epfl/03_try/parsingDates.worksheet.sc`
+
+```scala
+import java.time.LocalDate
+import java.time.Period
+import scala.io.Source
+import scala.util.{Success, Try, Using}
+
+def parseDate(str: String): Try[LocalDate] =
+  Try(LocalDate.parse(str))
+
+def tryPeriod(str1: String, str2: String): Try[Period] =
+  parseDate(str1).flatMap { date1 =>
+    parseDate(str2).map { date2 =>
+      Period.between(date1, date2)
+    }
+  }
+
+tryPeriod("2020-07-27", "2020-12-25") // : Try[Period] Success
+tryPeriod("2020-19-27", "2020-12-25") // : Try[Period] Failure
+```
+
+Alternatively, we can use the `for comprehesion` in the body of the function `tryPeriod` that is a syntactic sugar for nested flatMaps.
+
+```scala
+def tryPeriod(str1: String, str2: String): Try[Period] =
+    for
+        date1 <- parseDate(str1)
+        date2 <- parseDate(str2)
+    yield
+        Period.between(date1, date2)
+```
+
+The result is the same.
+
+Here is a summary of the transformation operations on the type Try.
+
+```scala
+trait Try[A];
+    def map[B](f: A => B): Try[B]
+    def flatMap[B](f: A => Try[B]): Try[B]
+    def recover(f: PartialFunction[Throwable, A]): Try[A]
+    def recoverWith(f: PartialFunction[Throwable, Try[A]]): Try[A]
+end Try
+```
+
+Now lets go deep with a harder problem: Instead of parsing just two dates, we lets parse an arbitrary number of dates, read from a file. Each date is written in a new line:
+
+```
+1970-01-01
+2004-01-20
+2016-07-15
+```
+
+A first approach could be:
+
+```scala
+
+def readDateStrings(fileName: String): Try[Seq[String]] = Try {
+    val source = Source.fromFile(fileName)
+    val dateStrings = source.getLines.toSeq
+
+    source.close()
+    dateStrings
+}
+  
+def parseDates(fileName: String): Try[Seq[LocalDate]] =
+  readDateStrings(fileName).flatMap { dateStrings =>
+    dateStrings.foldLeft[Try[Seq[LocalDate]]](Success(Vector.empty[LocalDate])) {
+      case (tryDates, dateString) =>
+          for
+              dates <- tryDates
+              date <- parseDate(dateString)
+        yield
+            dates :+ date
+    }
+  }
+
+parseDates("./src/main/scala/org/epfl/03_try/dates-file.txt")
+```
+Here we can rewrite the `readDateStrings` function with `Using` to mx in resource acquisition and release with operations that can fail:
+
+```scala
+def readDateStrings(fileName: String): Try[Seq[String]] =
+  Using(Source.fromFile(fileName)) { source =>
+    source.getLines().toSeq
+  }
+
+```
+
+In summary, you should leverage the operations `map` and `flatMap` to manipulate Try values while postponing failure handling to a later point in the program. And you should also leverage `Using` to mix in resource acquisition and release with operations that can fail.
+
 ### Validating Data
 ### Manipulating Validated Values
 ### Combining Try and Eithre
