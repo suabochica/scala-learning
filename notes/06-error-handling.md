@@ -194,7 +194,7 @@ A typical use case is to wrap a Java API that models failures by throwing except
 In summary, the type try makes it explicit that the computation may fail, and it lets you manipulate, successful, result or recover from exceptions. The value of type try can be either a success or failure. It is common practice to use try blocks to wrap calls to API that model failure by throwing exceptions.
 
 ### Manipulating Try Values
-Lets review the most common high-level operations to use to manipulate values of type `Try`.
+Let's review the most common high-level operations to use to manipulate values of type `Try`.
 
 For instance, consider a situation where you want to read two dates from `String` values, and compute the duration between theme. Parsing a date is an operation that may fail, but for this case we do not to deal with the failures yet, lets to focus on the case where both dates were successfully parsed. Please check the contents in `examples/week_6/src/main/scala/org/epfl/03_try/parsingDates.worksheet.sc`
 
@@ -289,11 +289,6 @@ def readDateStrings(fileName: String): Try[Seq[String]] =
 In summary, you should leverage the operations `map` and `flatMap` to manipulate Try values while postponing failure handling to a later point in the program. And you should also leverage `Using` to mix in resource acquisition and release with operations that can fail.
 
 ### Validating Data
-
-
-
-### Manipulating Validated Values
-### Combining Try and Either
 
 Lets check another way to model failures, which is mor appropirate for reporting validation errors to the end users.
 
@@ -403,6 +398,66 @@ validateDuration("nota a date", "not a date either")
 Both errors are reported!
 
 In summary, we have discovered a new operation for combining validation results, which accumulates validation errors. We have called it `validateBoth`, but it may exist under the name` product` or `zip` in third-party libraries. In addition to `validateBoth`, transforming values with `map`, and chaining operations that validate values with `flatMap` are still useful operations.
+
+
+
+### Manipulating Validated Values
+
+We have seen several building blocks for manipulating validated values.
+
+- _transform_ valid values with `map`
+- _chain_ validation rules with `flatMap`
+- _aggregate_ valid values (accumulating validation error)  with `validateBoth`
+
+Let's discover another building block for aggregating an arbitrary number of valid values.
+
+Let us revisit the problem of parsing arbitrary number of dates in a file.
+
+For now, let us assume that we have already read each line of the file, so we have a `List[String]`.
+
+We want to parse each of these `String` elements as a date, and return a valid list of dates in cases of success, or a list of errors in case there is a t least one failure.
+
+```scala
+def parseDates(strs: Seq[String]): Validated[Seq[LocalDate]]
+```
+
+We already know how to parse a single `String` as a date:
+
+```scala
+def parseDate(str: String): Validated[LocalDate] =
+  Try(LocalDate.parse(str)).toEither
+    .left.map(error => Seq(error.getMessage))
+```
+
+The method `parseDates` validates that each `String` element of a list is a `date`. It returns either a valid list of `LocalDate`, or a list of validation errors.
+
+In practice, validating each element of a collection is a common thing to do. Could we generalize what `parseDates` does to an arbitrary type of elements `A`,  to which we want to apply an arbitrary validation rule `A => Validated[B]`?
+
+```scala
+def validateEach[A, B](as: Seq[A])(f: A => Validated[B]): Validated[Seq[B]]
+```
+
+Then, the implementation of `parseDates` will something like:
+
+```scala
+def parseDates(strs: Seq[String]): Validated[Seq[LocalDate]]
+    validateEach(strs)(parseDate)
+```
+
+> Note: please check these implementations in the file `scala-learning/examples/week_6/src/main/scala/org/epfl/05_validateEach/parsingDates.worksheet.sc`
+
+Luckily, third-party libraries already implement validateEach for you. This mtehod is often called `traverse`, or `foreach`
+
+In summary, we have the next operation list over `Either`:
+
+- _transform_ valid data with `map`
+- _aggregate_ valid data (accumulating validation error)  with `validateBoth`
+- _chain_ validation rules with `flatMap`
+- _validate_ a collection of values with `validateEach`
+
+These operations are the building blocks for implementing complex validation scenarios. In practice, these operations might be provided with different names by third-party libraries.
+
+### Combining Try and Either
 
 ## Asynchronous Programming
 ### Concurrent Programming
