@@ -289,8 +289,120 @@ def readDateStrings(fileName: String): Try[Seq[String]] =
 In summary, you should leverage the operations `map` and `flatMap` to manipulate Try values while postponing failure handling to a later point in the program. And you should also leverage `Using` to mix in resource acquisition and release with operations that can fail.
 
 ### Validating Data
+
+
+
 ### Manipulating Validated Values
-### Combining Try and Eithre
+### Combining Try and Either
+
+Lets check another way to model failures, which is mor appropirate for reporting validation errors to the end users.
+
+We have seen how to use exceptions to handle errors. These solutions have the property of stopping the execution flow of the program as soon as ther is an error.
+
+As a consequence, they might not be appropriate for reporting validation error to the end-users of an applicaiton. Indeed, in this case we might want to provide a **list of errors** (e.g., a list of properties that are invalid in a JSON object). 
+
+In practice, projects might use a third-party library to handle validation errors. For learning purposes we introduce a general framework to reason about validation error, without relying on a specific library.
+
+First, we model validation errors as a collection of `String` message:
+
+```scala
+type Errors = Seq[String]
+```
+
+Then, we model the type of "a validated value of type A" to be either `Errors` or `A`.
+
+```scala
+type Validate[A] = Either[Errors, A]
+```
+
+The type `Either` comes from the Scala standar library and models a value that can be either of one type or of another type. `Either` takes two type parameters, the _left_ type, and the _right_ type.
+
+In our example, a valid value of type `Validated[Int]` can be constructed like this:
+
+```scala
+val validInt: Validated[Int] = Right(42)
+```
+
+Conversely, an invalid value of type `Validated[Int]` would be constructed as follows:
+
+```scala
+val invalidInt: Validated[Int] = Left(Seq("Invalid integer"))
+```
+
+We can use pattern matching to inspect the content of a validated value:
+
+```scala
+validInt match
+    case Right(n) => prinln(s"Got a valid integer: $n")
+    case Left(errors) => prinln(s"Got validation errors: $errors")
+```
+
+Like with `Try`, we can use the operation `map` to tranform a valid (_right)_ value without having to deal with the error cases:
+
+```scala
+validInt.map(n => n + n) // : Validated[Int] = Right(84)
+invalidInt.map(n => n + n) // : Validated[Int] = Left(Seq("Invalid integer"))
+```
+
+The operation `map` only transforms the "right" value of the `Either`. For this reason, our `Validated[A]` type sets the error on the "left" side, and the success on the "right" side.
+
+Again, similar to `Try`, we can use the operation `flatMap` to transform a valid value with a function that also returns a validated value.
+
+For instance, to parse two dates an compute the period between them:
+
+```scala
+def parseDate(string: String): Validated[LocalDate] = ...
+
+def validatePeriod(str1: String, str2: String): Try[Period] =
+    for
+        date1 <- parseDate(str1)
+        date2 <- parseDate(str2)
+    yield
+        Period.between(date1, date2)
+```
+
+This implementation is very similar to the one that uses `Try` in the previous section.
+
+However there is a problem with this implementation and it is that only one error is returned. The goal is report all possible error to the user.
+
+We need an operation for combining validated values such that:
+
+- two valid values prodcue a valid value containing a pair,
+- one or two invalid values produce an invalid value containing all the validation errors.
+
+The signature an the respective implementation of this operation could be the following:
+
+```scala
+def validateBoth[A, B](
+    validateA: Validated[A],
+    validateB: Validated[B]
+): Validated[(A, B)] =
+    (validatedA, validatedB) match
+        case (Right(a), Right(b)) => Right((a, b))
+        case (Left(e), Right(_)) => Left(e)
+        case (Right(_), Left(e)) => Left(e)
+        case (Left(e1), Left(e2)) => Left(e1 ++ e2)
+```
+
+With this operation we can use it like this:
+
+```scala
+def validatePeriod(str1: String, str2: String): Validated[Period] =
+    validateBoth(parseDate(str1), parseDate(str2))
+        .map((date1, date2) => Period.between(date1, date2))
+
+validateDuration("nota a date", "not a date either")
+// : Validate[Period] = Left(
+//   List(
+//      "Text 'not a date' could not be parsed"
+//      "Text 'not a date either' could not be parsed"
+//   )   
+// )
+```
+
+Both errors are reported!
+
+In summary, we have discovered a new operation for combining validation results, which accumulates validation errors. We have called it `validateBoth`, but it may exist under the name` product` or `zip` in third-party libraries. In addition to `validateBoth`, transforming values with `map`, and chaining operations that validate values with `flatMap` are still useful operations.
 
 ## Asynchronous Programming
 ### Concurrent Programming
