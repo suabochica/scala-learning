@@ -459,6 +459,70 @@ These operations are the building blocks for implementing complex validation sce
 
 ### Combining Try and Either
 
+In previous lessons, we have seen how to manage exceptions with `Try`, and how to manage data validation with `Either`. In a complete program that manage both; exceptions and validations, how do we combine them?
+
+Let us have a look at our example where we want to parse an arbitrary number of dates from a file. Each date is written in a new line. We want to return an error message for each date that was not properly formatted. In case another error happens (e.g., unable to read the file) the program should log the error in the standard error stream an stop.
+
+We break down our program in two main components:
+
+1. `readAndParseDates`, tries to read the file and parse its content.
+2. `run` calls the first component and shows the error message in case of failure.
+
+```scala
+def readAndParseDates(fileName: String): Try[Validated[Seq[LocalDate]]]
+
+def run(fileName: String): Unit
+```
+
+The return type of `readAndParseDates` explicitly models the two types of errors we want to handle. `Try` models error that can abort our program execution, whereas `Validated` models the fact that dates read in the file can possibly invalid.
+
+The first step for implementing `readAndParseDates` is to read the file content, which we do in a separate methods, `readDateStrings`. Reading a file with `Source.fromFile` can throw an exception. We explicitly signal to our callers that these errors can happen by having ther return type `Try`:
+
+```scala
+def readDateStrings(fileName: String): Try[Seq[String]] =
+    Using(Source.fromFile(fileName)) { source =>
+        source.getLines().toSeq
+    }
+```
+
+The next step is implementing a `parseDate` function by wrapping the call to `LocalDate.parse` in a `Try` and then by converting failures into `Left` values, and successes into `Right` value":
+
+```scala
+def parseDate(str: String): Validated[LocalDate] =
+    Try(LocalDate.parse(str)) match
+        case Failure(exception) => Left(Seq(exception.toString()))
+        case Success(date) => Right(date)
+```
+
+We implementing `readAndParseDates` by resusing `readDateStrings` and `parseDate`.
+
+```scala
+def readAndParseDates(fileName: String): Try[Validated[Seq[LocalDate]]] =
+    readDateStrings(fileName).map { dateStrings =>
+        validateEach(dateString)(parseDate)
+    }
+```
+
+Finally we implementing the `run` entry point function:
+
+```scala
+def run(fileName: String) : Unit =
+    readAndParseDates(fileName) match
+        case Failure(exception) =>
+            System.err.println(s"Unable to parse dates file: $exception")
+        case Success(validatedDates) =>
+            validatedDates match
+                case Left(errors) =>
+                    println(s"Invalid data: ${errors.mkString(", ")}")
+                case Right(dates) =>
+                    println(s"Successfully parsed dates: ${errors.mkString(", ")}")
+```
+
+In summary, the more types of error we model, the more complex our types become. In this case, we have used the `Try[Validated[A]]` to model the fact that there are two type of errors:
+
+1. validation errors that we want to report to the user for them to fix; and
+2. other errors that the user cannot deal with.
+
 ## Asynchronous Programming
 ### Concurrent Programming
 ### Operations on Type Future
