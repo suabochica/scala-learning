@@ -525,6 +525,100 @@ In summary, the more types of error we model, the more complex our types become.
 
 ## Asynchronous Programming
 ### Concurrent Programming
+
+Nowdays, distributed systems power a lot of applications (e.g., web and mobile applications). These systems are made of several physical machines (a.k.a. nodes) communicating together.
+ 
+The client devices execute some parts of the program, and the server executers other parts of the program. We say that the execution of the programs is disributed between several machines. These architecture have several challenges. For example:
+
+- What happens if multiple clients modify the state of the system at the same time>
+- Can the server handle request coming from other clients whilte it is already busy responding to one client?
+
+If we zoom the server node, the same pattern might be used internally:
+
+``` mermaid
+graph TD
+    A[Public] <--> B[Commands]
+    B <--> C[Database]
+    C <--> D[Queries]
+    D <--> A
+```
+
+Similar concerns arise: can the system handle the application of two commands at the same time? Is it possible to read the system state while commands are still being processed? Indeed, distributed computations are ubiquitous.
+
+Last, if we zoom again on one node it can use the same pattern again to leverage the multiple CPUs of the machine:
+
+``` mermaid
+graph TD
+    A[CPU1] <--> B[Memory]
+    A <--> C[CPU2]
+    A <--> D[CPU4]
+    D <--> E[CPU3]
+    C <--> B
+    D <--> B
+```
+
+Again: what happens if multiple computations modify the memory at the same time? How can a computation running in a CPU depend on the result of another computation running in a different CPU?
+
+Leveraging multiple CPUs in a single program requires **multi-threading**. Sharing data between threads requires using **thread-safe** data structures (similarly, sharing data between nodes requires some form of transactions in the underlying database system).
+
+Within a single JVM, use thread-safe data structures such as the ones in the package `java.util.concurrent.atomic` or `scala.collection.concurrent`.
+
+Between processes or nodes, you can rely on third-party database systems.
+
+Whether you perform a remote call, or you start a computation in an different thread, you eventually need a way to "do something" with the result.
+
+In Scala, in both situations we use the type `Future` to model the result of such computations. A `Future` represents a value that may not be available yet, but might become available in the future -- when whatever is computing it has finished.
+
+As a first example, consider the following signature of a program that inserts a new user in a remote database and eventually returns a result of type `User`:
+
+```scala
+def insertUser(login: String, passwordHash: Seq[Byte]): Future[User]
+```
+
+As a second example, consider the following signature of a program that computes te cryptographic hash of a password using the BCrypt algorithm. The program start the computation on a different thread and eventually returns a result of type `Seq[Byte]`
+
+```scala
+def bcrypt(saltRound: Int, password: String): Future[Seq[Byte]]
+```
+
+We will see later how to implement an operation that executes code on a different execution thread. Let us first get a general idea of what it is like to work with operations returning `Future`.
+
+The operations `insertUser` and `bcrypt` return a result to the caller thread possibly _before_ the actual result has been computed. We say that `insertUser` and `bcrypt` are **asynchronous computations**.
+
+The returned `Future` value provides methods to eventually use the actual result _when_ it is available.
+
+The most common way to work with `Future` values is to **transform** them into other `Future` values by using operations very similar to the ones we already use with collections or `Try: map`, `flatMap` and `zip`.
+
+For instance, consider the complete scenario of adding a new user to the system. We first want to compute the user password hash with the operation `bcript`, and, after we get the password hash, insert the user ron in the database with the `insertUser` operation:
+
+``` mermaid
+graph TD
+    A[bcryp] --> B[insertUser]
+```
+
+By combining `Future` values, we end up building trees of computations with sequential and parallel branches.
+
+The result is necessarily a `Future` value again, which is finally consumed by your application framework or testing framework.
+
+When we run an asynchronous computation, there are two possible outcomes:
+
+- the computation eventually returns a result,
+- or, it fails (e.g., an exception is thrown, or the remote service is unreachable)
+
+Later we will see how to handle such failures.
+
+We can model the state of a `Future[A]` value at any point in time with the type `Option[Try[A]]`:
+
+- `None` means that the outcome of the computation is not known yet,
+- `Some(Success(a))` means that the computation succeeded,
+- `Some(Failure(e))` means that the computation failed.
+
+In summary, Most systems run on several execution threads. Sharing data betweeen several threads of execution requires using thread-safe data structures.
+
+For a program running in a given thread, we model the result of computations possible performed in a different thread with the type `Future`
+
+We usually combine values of type `Future` to build a graph of computations containing sequential and parallel branches
+
 ### Operations on Type Future
 ### Examples with Future
 ### Execution Context
