@@ -593,7 +593,7 @@ For instance, consider the complete scenario of adding a new user to the system.
 
 ``` mermaid
 graph TD
-    A[bcryp] --> B[insertUser]
+    A[bcrypt] --> B[insertUser]
 ```
 
 By combining `Future` values, we end up building trees of computations with sequential and parallel branches.
@@ -620,6 +620,130 @@ For a program running in a given thread, we model the result of computations pos
 We usually combine values of type `Future` to build a graph of computations containing sequential and parallel branches
 
 ### Operations on Type Future
+
+Let's check how to build sequential and parallel path of computations, by using the most common operations and future values.
+
+In the previous section, we have seen that in Scala, we model asynchronous computations as methods returning `Future`. The execution of these computations eventually fails or succeeds. Orchestating asynchronous computations is like building a directed graph of computations.
+
+Similar to what we say with `Try` and `Validated`, we can use `map` and `flatMap` to transform the result of a succesful asynchronouse computation.
+
+For instance, assuming we use an in-memory database, we have the following operations:
+
+```scala
+def bcrypt(saltRound: Int, password: String): Future[Seq[Byte]]
+def insertUser(login: String, passwordHast: Seq[Byte]): User
+```
+
+Computing a password has and then inserting a user is achieved like this:
+
+```scala
+def hashPasswordAndInsert(name: String, password: String): Future[User] =
+    bcrypt(10, password)
+        .map(passwordHash => insertUser(name, passwordHash))
+```
+
+Let's review in deep how is the behavior in asyncrhonous programming. For example, check the next snippet:
+
+```scala
+println("calling bcrypt")
+bcrypt(10, "asimplepassword").map(hash => printlin(s"bcrypt result: $hash"))
+println("bcrypt called")
+```
+
+We can say that:
+
+- the message "calling bcrypt" will be printed before the `bcrypt`method is called,
+- the message "bcrypt result: ..." will be printed after the `bcrypt` method call has terminated
+
+But we have **no guarantee** that the message "bcrypt called" will be printed _before_ or _after_ the message "bcrypt result: ...".
+
+In practice, you are likely to use a remote database. In such a case, the operation `insertUser` would also be asyncrhonous. So, you want to chain two asyncrhonouse computations:
+
+``` mermaid
+graph TD
+    A[bcrypt] --> B[insertUser]
+```
+
+We achieve this with the operations `flatMap`:
+
+```scala
+def hashPasswordAndInsert(name: String, password: String): Future[User] =
+    bcrypt(10, password)
+        .flatMap(passwordHash => insertUser(name, passwordHash))
+```
+
+Now let's start to orchestate the insertion of two users `Pam` and `Jim` asynchronously. We construct a `Future` value that complete when two `Future` values complete with the operation `zip`:
+
+```scala
+val eventualPam: Future[User] =
+    hashPasswordAndInsert("Pam", "averycomplicatedpassword")
+
+val eventualJim: Future[User] =
+    hashPasswordAndInsert("Jim", "anothercomplicatedpassword")
+
+val eventualPamAndJim: Future[(User, User)] =
+    eventualPam.zip(eventualJim)
+```
+
+To join not just two asynchronous competitions, but an arbitrary number of asynchronous competitions. You can use the operation `traverse`. `taverse` runs as many asynchronous computations as there are elements in the collection and returns a `Future` value eventually containing all the results in a collection. 
+
+```scala
+val userData Seq[(String, String)] = Seq(
+    "Pam" -> "averycomplicatedpassword",
+    "Jim" -> "anothercomplicatedpassword",
+)
+
+val eventualUsers: Future[Seq[User]] =
+    Future.traverse(userData)(hashPasswordAndInsert)
+```
+
+The asynchronouse computations are executed independently of each other, in no predifined order.
+
+
+So far, we have seen how to transform and chain successful asynchronous computations. What happens if an asynchronouse computations fails?
+
+We represent failures with "failed" `Future` values containing an exception. Like with `Try`, we can handle these failures with the operation `recover`:
+
+```scala
+val eventuallyInserted: Future[Boolean] =
+    hashPasswordAndInsert("Pam", "averycomplicatedpassword")
+        .map(_ => true)
+        .recover { case NonFatal(exception) => false }
+```
+
+Similar to `recover`, another operations for handling failed `Future` values is `recoverWith`. The difference is that `recoverWith` _tries_ to recover from the failure by running another asynchronous computation.
+
+So, below we have a API summary of the most common operations for `Future`:
+
+```scala
+trait Future[A]
+    def map[B](f: A => B): Future[B]
+    def flatMap[B](f: A => Future[B]): Future[B]
+    def zip[B](that: Future[B]): Future[(A, B)]
+    def recover(f: Throwable => A): Future[A]
+    def recoverWith(f: Throwable => Future[A]): Future[A]
+
+object Future
+    def traverse[A, B](as: Seq[A])(f: A => Future[B]): Future[Seq[B]]
+```
+
+We have seen that the operations `map`, `zip`, `flatMap`, and `traverse` are defined on various types (`Seq`, `Try`, `Either`, `Future`). You might encounter them on other types as well.
+
+These operations are indeed very common, they have been well studied, and you may her about their most general form, named after category theory:
+
+- `map` is defined by the type class `Functor`
+- `zip` is defined by the type class `Applicative`
+- `flatMap` is defined by the type class `Monad`
+- `traverse` is defined by the type class `Traverse`
+
+We expect that now we have a good intuition of what this operations do.
+
+In summary, `map` and `flatMap` let you define what to do _after_ a `Future` value is resolved. They build **sequential** paths of computation.
+
+`zip` and `traverse` let you "join" together an arbitrary number of `Future` values. They builds **parallel** paths of computation.
+
+`recover` and `recoverWith` let you handle failures
+
 ### Examples with Future
 ### Execution Context
 
