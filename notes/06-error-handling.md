@@ -745,6 +745,104 @@ In summary, `map` and `flatMap` let you define what to do _after_ a `Future` val
 `recover` and `recoverWith` let you handle failures
 
 ### Examples with Future
+Let's go deep with `Future` with practical excersices
+
+The purpose of the first exercise is to fetch data from a web service. The web servicer returns data in pages, and provides the following method to fetch one specific page:
+
+```scala
+def getPage(page: Int): Future[String]
+```
+
+The service also provides the following method to know how many pages there are, in total:
+
+```scala
+def getPagesCount(): Future[Int]
+```
+
+Exercise:: write a program that fetches all the pages.
+
+```scala
+def getAllPages(): Future[Seq[String]] = ???
+```
+
+> Note: The complete solution is in the next file: `examples/week_6/src/main/scala/org/epfl/errorhandling/part9/getAllPages_parallel.scala`.
+
+```scala
+def getAllPages(): Future[Seq[String]] =
+    getPagesCount().flatMap { pagesCount =>
+        val allPages = 1 to pagesCount
+
+        Future.traverse(allPages)(getPage)
+    }
+
+```
+
+Here we first get the pages count, and then fetch each page with `getPage`. This approach execute the count with parallel tasks. The parallelism level of the program will be discused in the next section.
+
+We can follow a sequential approach to fetches all the pages.
+
+> Note: The complete solution is in the next file:  `examples/week_6/src/main/scala/org/epfl/errorhandling/part9/getAllPages_sequential.scala`.
+
+```scala
+def getAllPages(): Future[Seq[String]] =
+    getPagesCount().flatMap { pagesCount =>
+        val allPages = 1 to pagesCount
+
+        allPages.foldLeft[Future[Seq[String]]](Future.successful(Vector.empty)) {
+            (eventualPreviousPages, pageNumber) =>
+                eventualPreviousPages.flatMap { previousPages =>
+                    getPage(pageNumber)
+                        .map(pageContent => previousPAges :+ pageContent)
+                }
+        }
+    }
+```
+
+Here we nest the `flatMap` and  `map` opeators.
+
+Finally let's consider that the web service is flaky. In the previous example, if fethcing a page fails, the `getAllPages` method returns a failed `Future`.
+
+Instead, we want to retry at most 3 times before giving up.
+
+```scala
+def reisilientGetAllPages(): Future[Seq[Srting]] = ???
+```
+
+The logic to fetch the pages will be the same, but instead of call the `getPage` method we call a new `reisilientGetPage` with the number of attemps and an iternal method `attempt`.
+
+> Note: The complete solution is in the next file:  `examples/week_6/src/main/scala/org/epfl/errorhandling/part9/resilientGetAllPages.scala`.
+
+```scala
+def reisilientGetPage(page: Int): Future[Seq[String]] =
+    val maxAttemps = 3
+
+    def attempt(remainingAttempts: Int): Future[String] =
+        if remainingAttemps = 0 then
+            Future.failed(Exception(s"Failde after $maxAttempts"))
+        else
+            println(s"Trying to fetch page $page ($remainingAttemps remmaining attemps)")
+            getPage(page).recoverWith { case NonFatal(_) =>
+                System.err.println(s"Fetching page $page failed...")
+                attempt(remainingAttempts - 1)
+            }
+
+    attempt(maxAttempts)
+
+def reisilientGetAllPages(): Future[Seq[String]] =
+    getPagesCount().flatMap { pagesCount =>
+        val allPages = 1 to pagesCount
+
+        allPages.foldLeft[Future[Seq[String]]](Future.successful(Vector.empty)) {
+            (eventualPreviousPages, pageNumber) =>
+                eventualPreviousPages.flatMap { previousPages =>
+                    reisilientGetPage(pageNumber)
+                        .map(pageContent => previousPAges :+ pageContent)
+                }
+        }
+    }
+```
+
+
 ### Execution Context
 
 ## Assestment
