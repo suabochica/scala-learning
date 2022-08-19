@@ -842,8 +842,120 @@ def reisilientGetAllPages(): Future[Seq[String]] =
     }
 ```
 
-
 ### Execution Context
+
+Let's see how asynchronous computations are scheduled by the runtime and that they are executed on so-called execution context. I will also give you some tips to get the most out of the default execution context
+
+So far, we have seen how to control _when_ to execute asynchronous computations (e.g., we can chain them with `flatMap`).
+
+However, whe we call the method `bcrypt`, in which thread is it executed? Also, when we use `map` to transform the result of fetching a resource from a remote service, _where_ is the code executed?
+
+Scala provides a threadpool to execute asynchronous computations. By default, it contains as many threads as the number of physical processors.
+
+This means that operations that combine `Future` values in parallel (`zip` and `traverse`) have a parallelism level equat to the number of processors.
+
+Third parties can provide custom execution context (e.g., with hyst one thread, or with as many threads as possible).
+
+In the standard library, all the operations that return `Future` values also take an implicit parameter of type `ExecutionContext`.
+
+```scala
+trait Future[A]:
+    def map[B](f: A => B)(using ExecutionContext): Future[B]
+    def zip[B](that: Future[B])(using ExecutionContext): Future[(A, B)]
+```
+
+The implementation of `map` schedules the execution of calling the function `f` in the given execution context. 
+
+
+The simplest way to provide such a given `ExecutionContext` is to add the following import:
+
+```scala
+import scala.concurrent.ExecutionContext.Implicits.given
+```
+
+The default `ExecutionContext` is designed to make all the computing power available to your program.
+
+It tries to fairly distribute the tasks that need to be computed to the threads. However, sometimes a task occupies a thread while doing nothing, for example:
+
+```scala
+Future {
+    Thread.sleep(10_000)
+}
+```
+
+This program creates a task that will use a thread to do nothing but waiting 10 seconds. We say that such programs _block_ threads,  because that thread is not available for computing other task in the meantime,.
+
+In practice, blocking happens whe you read a file, or communicates with a remote database witt JDBC. In such a case, you should create more thread than the number of physical processsors, to not starve your thread-pool.
+
+You achieve this by wrapping your "blocking" code in `concurretn.blocking`
+
+```scala
+Future {
+    concurrent.blocking {
+        Thread.sleep(10_000)
+    }
+}
+```
+
+In the previous code examples, we have seen several ways to construct `Future` values.
+
+1. Immediately create a succesful `Future` value by using the constructor `Future.succesful` with a value that you already have on hand.
+2. Immediately create a failed `Future` value by using the constructor `Futuer.failed` with an exception.
+3. Use a `Future {}` blockt to schedule a computation in the available `ExecutioContext`.
+
+One pitfall with using `Future` is that you manipulate the _result_ of computations, but not the computations itself. When you use operations on `Future`, you do not manipulate the computations that produce the `Future` values, but only their results.
+
+As a consequence, you may, by mistake, run two independent computations sequentially (although running them in parallel would be more efficient).
+
+Let us illustrate this with an example. Consider a methods `getUser`, which return `Future[User]`
+
+```scala
+def getUser(id: UserID): Future[User]
+```
+
+Here is a program that computes the age difference between two users:
+
+```scala
+getUser(id1).flatMap { user1 =>
+    getUser(id2).map { user2 =>
+        user1.age - user2.age
+    }
+}
+```
+
+Can you tell whether the calls to `getUser` can happen in parallel or if they will necessarily happen sequentially?. The answer here is sequentially.
+
+To perform the calls in parallel we have two way: One with `zip` an another with `flatMap`.
+
+With zip will something like:
+
+```scala
+getUser(id1).zip(getUser(id2)).map { (user1, user2) =>
+    user1.age - user2.age
+}
+```
+
+Or with `flatMap`, by moving the second call outside of the function passed to this operator.
+
+```scala
+val eventualUser2 = getUser(id2)
+
+getUser(id1).flatMap { user1 =>
+    eventualUser2.map { user2 =>
+        user1.age - user2.age
+    }
+}
+```
+
+In summary, asynchronous computations are executed in an `ExecutionContext` which manages the underlying threads on which the computations are scattered.
+
+The default execution context is optimized for non-blocking code. In case you use blocking code, remember to wrap it in a `concurrent.blocking` block.
+
+Most of the time, you don't need to think much about the execution context, just import it at the beginning of your source files or take it as a context parameter.
+
+Last, a _rule of thumb:_ prefer combining future values of independent computations with `zip` instead of `flatMap` to maximize parallelism.
+
+
 
 ## Assestment
 

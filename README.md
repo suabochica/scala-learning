@@ -21,7 +21,7 @@ Secondary goal: you get familiar with the most commont general purpose librarin 
 ## Syllabus
 
 | Number    | Description                                                                        |
-| --------- | ---------------------------------------------------------------------------------- |
+|-----------|------------------------------------------------------------------------------------|
 | Session 1 | Language syntax, definitions, expressions, conditions, evaluation, domain modeling |
 | Session 2 | Generic data types, loops                                                          |
 | Session 3 | Build tools, developer workflow, modules, encapsulation                            |
@@ -71,7 +71,7 @@ brew install coursier/formulas/coursier && cs setup
 Along with managing JVMs, cs setup also installs useful command-line tools:
 
 | Commands  | Description                              |
-| --------- | ---------------------------------------- |
+|-----------|------------------------------------------|
 | scalac    | the Scala compiler                       |
 | scala     | the Scala REPL and script runner         |
 | scala-cli | Scala CLI, interactive toolkit for Scala |
