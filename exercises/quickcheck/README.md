@@ -36,7 +36,7 @@ first queue and all the elements of the second queue.
 In addition, we can test whether a queue is empty or not with isEmpty. If you have a non-empty queue, you can find its minimum with findMin. You can also get a smaller queue from a non-empty queue by deleting the minimum element with deleteMin. In this assignment, the heap operates on Int elements with their values as priorities, so findMin finds the least integer in the heap.
 
 ## Property-Based Tests
-You are given multiple implementations of HeapInterface in the file **src/main/scala/quickcheck/Heap.scala**. Only one of them is correct, while the other ones have bugs. Your goal is to complete the implementation of properties that will be satisfied by the correct implementation, but will fail for at least one incorrect implementation, thus revealing it's buggy.
+You are given multiple implementations of **HeapInterface** in the file **src/main/scala/quickcheck/Heap.scala**. Only one of them is correct, while the other ones have bugs. Your goal is to complete the implementation of properties that will be satisfied by the correct implementation, but will fail for at least one incorrect implementation, thus revealing it's buggy.
 
 You should complete the properties written in the body of the **HeapProperties** class in the file **src/main/scala/quickcheck/HeapProperties.scala**.
 
@@ -44,8 +44,6 @@ You should complete the properties written in the body of the **HeapProperties**
 The idea behind property-based testing is to verify that certain properties hold on your implementations. Instead of specifying exactly which inputs our properties should satisfy we instead generate random inputs, and run each property test on these randomly generated inputs. This way we increase the likelihood that our implementation is correct.
 
 For example, we would like to check that adding a single element to an empty heap, and then removing this element, should yield the element in question. We would write this requirement as follows:
-
-in question. We would write this requirement as follows:
 
 ```scala
 forAll { (x: Int) =>
@@ -66,7 +64,7 @@ forAll { (heap: List[Node]) =>
 }
 ```
 
-This property succeeds as long as findMin effectively returns a value. If findMin throws an exception, the property will fail. You will learn more about exceptions later in the course.
+This property succeeds as long as `findMin` effectively returns a value. If findMin throws an exception, the property will fail. You will learn more about exceptions later in the course.
 
 Note that you can write properties that take several arbitrary parameters, like the following: 
 
