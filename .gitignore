@@ -22,5 +22,25 @@ examples/week_5/project/metals.sbt
 examples/week_6/project/metals.sbt
 
 exercises/fireworks/project/metals.sbt
+exercises/fireworks/.idea
+exercises/fireworks/target
+
 exercises/democracy/project/metals.sbt
+exercises/democracy/.idea
+exercises/democracy/target
+
 exercises/todo/project/metals.sbt
+exercises/todo/.idea
+exercises/todo/target
+
+exercises/quickcheck/project/metals.sbt
+exercises/quickcheck/.idea
+exercises/quickcheck/target
+
+exercises/wikigraph/project/metals.sbt
+exercises/wikigraph/.idea
+exercises/wikigraph/target
+
+exercises/codecs/project/metals.sbt
+exercises/codecs/.idea
+exercises/codecs/target
