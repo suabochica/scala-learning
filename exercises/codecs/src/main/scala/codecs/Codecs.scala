@@ -82,10 +82,13 @@ trait EncoderInstances:
 
   /** An encoder for `String` values */
   given stringEncoder: Encoder[String] =
-    ??? // TODO Implement the `Encoder[String]` given instance
+  // TODO Implement the `Encoder[String]` given instance
+    Encoder.fromFunction(s => Json.Str(s))
 
   /** An encoder for `Boolean` values */
   // TODO Define a given instance of type `Encoder[Boolean]`
+  given booleanEncoder: Encoder[Boolean] =
+    Encoder.fromFunction(b => Json.Bool(b))
 
   /**
     * Encodes a list of values of type `A` into a JSON array containing
@@ -189,12 +192,24 @@ trait DecoderInstances:
 
   /** A decoder for `Int` values. Hint: use the `isValidInt` method of `BigDecimal`. */
   // TODO Define a given instance of type `Decoder[Int]`
+  given intDecoder: Decoder[Int] =
+    Decoder.fromPartialFunction {
+      case Json.Num(x: BigDecimal) if x.isValidInt => x toInt
+    }
 
   /** A decoder for `String` values */
   // TODO Define a given instance of type `Decoder[String]`
+  given stringDecoder: Decoder[String] =
+    Decoder.fromPartialFunction {
+      case Json.Str(s: String) => s
+    }
 
   /** A decoder for `Boolean` values */
   // TODO Define a given instance of type `Decoder[Boolean]`
+  given booleanDecoder: Decoder[Boolean] =
+    Decoder.formPartialFunction {
+      case Json.Bool(b: Boolean) => b
+  }
 
   /**
     * A decoder for JSON arrays. It decodes each item of the array
@@ -244,7 +259,8 @@ trait PersonCodecs:
 
   /** The encoder for `Person` */
   given Encoder[Person] =
-    ObjectEncoder.field[String]("name")
+    ObjectEncoder
+      .field[String]("name")
       .zip(ObjectEncoder.field[Int]("age"))
       .transform[Person](user => (user.name, user.age))
 
@@ -255,9 +271,12 @@ trait PersonCodecs:
     *       `transform`.
     */
   given Decoder[Person] =
-    ???
+    ObjectDecoder
+      .field[String] ("name")
+      .zip (ObjectEncoder.field[Int] ("age") )
+      .transform[Person] (user => (user.name, user.age) )
 
-end PersonCodecs
+  end PersonCodecs
 
 case class Contacts(people: List[Person])
 
@@ -269,10 +288,18 @@ trait ContactsCodecs:
   // The JSON representation of a value of type `Contacts` should be
   // a JSON object with a single field named “people” containing an
   // array of values of type `Person` (reuse the `Person` codecs)
-  given Encoder[Contacts] = ???
+  given Encoder[Contacts] =
+    Object.Encoder
+      .field[List[Person]]("people")
+      .transform[Contacts[xs => xs.people]]
   // ... then implement the decoder
 
-end ContactsCodecs
+  given Decoder[Contacts] =
+    Object.Decoder
+      .field[List[Person]] ("people")
+      .transform[Contacts[xs => xs.people]]
+
+  end ContactsCodecs
 
 // In case you want to try your code, here is a simple `Main`
 // that can be used as a starting point. Otherwise, you can use
