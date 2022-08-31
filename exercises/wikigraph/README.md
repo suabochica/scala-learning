@@ -41,3 +41,31 @@ You can download the file from [here](https://moocs.scala-lang.org/~dockermoocs/
 
 Please put the file inside a directory named `enwiki-datase`t, in the project root directory. The path to the dataset (relative to the project root directory) should be `enwiki-dataset/smallwiki.d`b so that it matches the filename used in `src/main/resources/application.conf`.
 
+## Open the project
+
+Download the handout archive, extract it somewhere on your filesystem, and open the directory wikigraph in your code editor.
+
+In case you use IntelliJ, go to menu “File”, click “Open…”, find the directory “wikigraph” where you extracted the archive, and click OK. IntelliJ should open the project and analyze its structure in the background.
+
+In case you use Metals with VS Code, go to menu “File”, click “Open Folder…”, select the directory “wikigraph” where you extracted the archive and click OK. Metals should show a notification saying “New sbt workspace detected, would you like to import the build?”, click “Import build”.
+
+You will work on two files:
+
+- src/main/scala/wikigraph/WikiResult.scala 
+- src/main/scala/wikigraph/Wikigraph.scala
+
+## Run the Tests
+
+At any point, you can run the tests to follow your progress.
+
+With IntelliJ, click on the green arrow in the left margin, in front of the class definition WikigraphSuite, in the file src/test/scala/wikigraph/WikigraphSuite.scala.
+
+With Metals and VS Code, open the file src/test/scala/wikigraph/WikigraphSuite.scala and click “test” just above the class definition WikigraphSuite.
+
+## Run the program
+
+While you implement the different parts of the assignment, you can experiment with them by modifying the file src/main/scala/wikigraph/Main.scala.
+
+With IntelliJ, click on the green arrow in the left margin, in front of the definition @main def main(): Unit and click on “Run 'Main'”.
+
+With Metals and VS Code, open the file src/main/scala/wikigraph/Main.scala and click “run” above the definition @main def main(): Unit.

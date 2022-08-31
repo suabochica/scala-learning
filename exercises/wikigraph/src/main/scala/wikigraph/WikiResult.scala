@@ -56,7 +56,11 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     * Hint: Both Either and Future have a similar method
     */
   def map[B](f: A => B)(using ExecutionContext): WikiResult[B] =
-    ???
+    val v = value.map {
+      case Right(r) => Right(f(r))
+      case Left(l)  => Left[Seq[WikiError], B](l)
+    }
+    WikiResult(v)
 
   /**
     * Use the result of this computation as an input for another asynchronous
@@ -69,7 +73,9 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     */
   def flatMap[B](f: A => WikiResult[B])(using ExecutionContext): WikiResult[B] = 
     val futureB: Future[Either[Seq[WikiError], B]] = value.flatMap {
-      ???
+      case Right(r) => f(r).value
+      case l @ Left(_) =>
+        Future(l.asInstanceOf[Either[Seq[WikiError], B]])
     }
     WikiResult(futureB)
 
@@ -83,8 +89,16 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     * Hint: The async part has been handled for you. You need to zip the two Either 
     */
   def zip[B](that: WikiResult[B])(using ExecutionContext): WikiResult[(A, B)] =
-    def zipEithersAcc(a: Either[Seq[WikiError], A], b: Either[Seq[WikiError], B]): Either[Seq[WikiError], (A, B)] =
-      ???
+    def zipEithersAcc(
+        a: Either[Seq[WikiError], A],
+        b: Either[Seq[WikiError], B]
+    ): Either[Seq[WikiError], (A, B)] =
+      (a, b) match
+        case (Right(r1), Right(r2)) => Right((r1, r2))
+        case (Left(l1), Left(l2)) => Left(l1 ++ l2)
+        case (_, Left(l2)) => Left(l2)
+        case (Left(l1), _) => Left(l1)
+
     WikiResult(this.value.flatMap { thisEither =>
       that.value.map { thatEither =>
         zipEithersAcc(thisEither, thatEither)
