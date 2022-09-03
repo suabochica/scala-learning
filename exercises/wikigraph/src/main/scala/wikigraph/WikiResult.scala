@@ -112,28 +112,32 @@ object WikiResult:
     * @param A the type of the result
     * @param a the value of the result
     */
-  def successful[A](a: A): WikiResult[A] = WikiResult(Future.successful(Right[Seq[WikiError], A](a)))
+  def successful[A](a: A): WikiResult[A] =
+    WikiResult(Future.successful(Right[Seq[WikiError], A](a)))
 
   /**
     * Creates a WikiResult which fails with the provided domain error
     * 
     * @param e the domain error which causes the failure of the computation
     */
-  def domainError[A](e: WikiError): WikiResult[A] = WikiResult(Future.successful(Left[Seq[WikiError], A](Seq(e))))
+  def domainError[A](e: WikiError): WikiResult[A] =
+    WikiResult(Future.successful(Left[Seq[WikiError], A](Seq(e))))
 
   /**
     * Creates a WikiResult which fails with the provided system exception
     * 
     * @param t the throwable exception causing the failure of the computation
     */
-  def systemFailure[A](t: WikiException): WikiResult[A] = WikiResult(Future.failed(t))
+  def systemFailure[A](t: WikiException): WikiResult[A] =
+    WikiResult(Future.failed(t))
 
   /**
     * Starts running the provided block asynchronously in the contextual execution context
     * 
     * @param block the computation to execute
     */
-  def start(block: => Unit)(using ExecutionContext): WikiResult[Unit] = WikiResult(Future(Right(block)))
+  def start(block: => Unit)(using ExecutionContext): WikiResult[Unit] =
+    WikiResult(Future(Right(block)))
 
   /**
     * Asynchronously and non-blockingly transforms a `Seq[A]` into a WikiResult[Seq[B]]
@@ -157,6 +161,10 @@ object WikiResult:
     * lecture “Manipulating Validated Values”.
     */
   def traverse[A, B](as: Seq[A])(f: A => WikiResult[B])(using ExecutionContext): WikiResult[Seq[B]] =
-    ???
+    as.foldLeft[WikiResult[Seq[B]]](
+      WikiResult(Future.successful(Right(Vector.empty)))
+    ) { (accumulator, element) =>
+      accumulator.zip(f(element).map(Seq(_))).map(e => e._1 ++ e._2)
+    }
 
 end WikiResult

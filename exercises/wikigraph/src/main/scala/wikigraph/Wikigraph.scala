@@ -21,7 +21,11 @@ final class Wikigraph(client: Wikipedia):
     * Hint: Use the methods that you implemented in WikiResult.
     */
   def namedLinks(of: ArticleId): WikiResult[Set[String]] =
-    ???
+    client.linksFrom(of)
+      .flatMap(articlesId =>
+        WikiResult.traverse[ArticleId, String](articlesId.toSeq)(client.nameOfArticle)
+          .map(element => element.toSet)
+      )
 
   /**
     * Computes the distance between two pages using breadth first search.
@@ -76,8 +80,27 @@ final class Wikigraph(client: Wikipedia):
       *       including the failed node. Refer to the documentation of [[wikigraph.WikiResult#fallbackTo]].
       */
     def iter(visited: Set[ArticleId], q: Queue[(Int, ArticleId)]): WikiResult[Option[Int]] =
-      ???
+      q.dequeueOption match
+        case None => WikiResult.successful(None)
+        case Some(((dequeue, element), newQueue)) =>
+          if dequeue >= maxDepth then WikiResult.successful(None)
+          else client
+            .linksFrom(element)
+            .flatMap { linkedIds =>
+              {
+                if linkedIds.contains(target) then
+                  WikiResult.successful(Some(dequeue))
+                else  iter(
+                  visited + element,
+                  newQueue.enqueueAll(
+                    linkedIds.filter(!visited.contains(_)).map((dequeue + 1, _))
+                  )
+                )
+              }
+            }
+            .fallbackTo(iter(visited + element, newQueue))
     end iter
+
     if start == target then
       // The start node is the one we are looking for: the search succeeds with
       // a distance of 0.
