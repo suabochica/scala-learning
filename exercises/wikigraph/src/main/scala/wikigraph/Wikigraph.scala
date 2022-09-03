@@ -79,7 +79,10 @@ final class Wikigraph(client: Wikipedia):
       *       to fallback by continuing iterating on the other articles of the queue without
       *       including the failed node. Refer to the documentation of [[wikigraph.WikiResult#fallbackTo]].
       */
-    def iter(visited: Set[ArticleId], q: Queue[(Int, ArticleId)]): WikiResult[Option[Int]] =
+    def iter(
+              visited: Set[ArticleId],
+              q: Queue[(Int, ArticleId)]
+            ): WikiResult[Option[Int]] =
       q.dequeueOption match
         case None => WikiResult.successful(None)
         case Some(((dequeue, element), newQueue)) =>
@@ -138,6 +141,26 @@ final class Wikigraph(client: Wikipedia):
     * Hint: You should use the methods that you implemented on `WikiResult` as well as
     *       `breadthFirstSearch`
     */
-  def distanceMatrix(titles: List[String], maxDepth: Int = 50): WikiResult[Seq[(String, String, Option[Int])]] =
-    ???
+  def distanceMatrix(
+    titles: List[String],
+    maxDepth: Int = 50
+  ): WikiResult[Seq[(String, String, Option[Int])]] = {
+    val allArticlesPairs = for {
+      distanceFromArticle <- titles
+      distanceToArticle <- titles
+      if distanceFromArticle != distanceToArticle
+    } yield (distanceFromArticle, distanceToArticle)
+
+    WikiResult.traverse(allArticlesPairs) { (distanceFromTitle, distanceToTitle) =>
+      client.searchId(distanceFromTitle)
+      .zip(client.searchId(distanceToTitle))
+      .flatMap { (distanceFromTitleId, distanceToTitleId) =>
+        breadthFirstSearch(distanceFromTitleId, distanceToTitleId, maxDepth)
+        .flatMap { distance =>
+          WikiResult.successful(distanceFromTitle, distanceToTitle, distance)
+        }
+      }
+    }
+  }
+
 end Wikigraph
