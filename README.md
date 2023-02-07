@@ -44,7 +44,7 @@ Because is practical and offer the next pros:
 - Can be used as drop-in replacement for Java
 - Mixed Scala/Java projects
 - Use existing Java libs
-- Use exisiting Java tools
+- Use existing Java tools
 - Decent IDE Support
 
 ## What is Scala Build Tool (SBT)?
@@ -150,7 +150,7 @@ Available Scala Versions
      2.13.7              2.12.9              2.11.5         
 ```
 
-To instal the version 2.13.8 of scala, run:
+To install the version 2.13.8 of scala, run:
 
 ```
 sdk install scala 2.13.8
