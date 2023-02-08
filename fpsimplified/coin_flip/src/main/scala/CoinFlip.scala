@@ -51,6 +51,7 @@ object CoinFlip extends App {
           printGameState(gameState)
           // return out of the recursion here
         }
+      }
     }
   }
 }

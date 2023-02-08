@@ -9,14 +9,14 @@ Primary goal: you know how to get things done in Scala
 - Be confident that the code you write does what you expect
 - Leverage a productive development environment
 
-Secondary goal: you get familiar with the most commont general purpose librarin and patterns of code
+Secondary goal: you get familiar with the most common general purpose libraries and patterns of code
 - Collections
 - Error Handling
 - Concurrency
 - Testing
-- Know which tool to picjk for which job
+- Know which tool to pick for which job
 
-> The common thread: How can Scala help you solve bussines problems?
+> The common thread: How can Scala help you solve business problems?
 
 ## Syllabus
 
@@ -133,7 +133,7 @@ Alternatively, you can install a specific scala's version. To validate the avail
 sdk list scala
 ```
 
-An you will get the next out
+And you will get the next out
 
 ```
 ================================================================================
@@ -225,5 +225,5 @@ Open the project with Visual Code and the Metals plugin installed on it from ter
 code .
 ```
 
-The first time you open the project with Visual Code will ask to you "Import Build?" in a dialog. Accept the suggestion an wait that metals build the project.
+The first time you open the project with Visual Code will ask "Import Build?" in a dialog. Accept the suggestion and wait that metals build the project.
 
