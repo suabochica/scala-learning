@@ -30,6 +30,7 @@ Secondary goal: you get familiar with the most common general purpose libraries 
 | Session 6 | Error handling, concurrency                                                        |
 
 ## Feature
+
 - Statically Typed
 - Runs on JVM, full inter-op with Java
 - Object Oriented
@@ -58,9 +59,11 @@ SBT is an open source build tool written in Scala for Scala and Java projects, s
 - Support mixed Java/Scala projects.
 - Launch Read-Eval-Print Loop (REPL) in project context.
 
-## Install Scala on macOS
+## Install Scala
 
-### Homebrew
+To install Scala it is recommended to use the `cs setup`, the Scala installer powered by Coursier. It installs everything necessary to use the latest Scala release from a command line. For more information please visit the [install Scala with cs setup](https://www.scala-lang.org/download/) in the official docs.
+
+### Homebrew for macOS
 
 Run:
 
@@ -84,13 +87,21 @@ For more information about cs, read coursier-cli documentation.
 Test your setup running:
 
 ```
-scala --version
+scala -version
 ```
 
 should get:
 
 ```
 Scala code runner version 3.1.2 -- Copyright 2002-2022, LAMP/EPFL
+```
+
+### Linux
+
+Run the following command in your terminal, following the on-screen instructions:
+
+```
+curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs setup
 ```
 
 ### sdkman
@@ -170,7 +181,7 @@ Scala code runner version 2.13.8 -- Copyright 2002-2021, LAMP/EPFL and Lightbend
 
 ## Install sbt on macOS
 
-> Note: For this section is assumend that sdkman is already installed
+> Note: For this section is assumed that sdkman is already installed
 
 Install a specific version of `sbt` is a similar process of what we did installed scala via sdkman.
 

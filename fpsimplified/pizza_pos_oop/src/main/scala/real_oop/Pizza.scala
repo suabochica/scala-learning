@@ -21,6 +21,10 @@ class Pizza {
     _crustType = ct
   }
 
+  def addTopping(t: Tooping) {
+    _toppings += t
+  }
+
   def removeTopping(t: Tooping) {
     _toppings -= t
   }

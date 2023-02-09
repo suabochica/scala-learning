@@ -1,0 +1,12 @@
+bin/
+target/
+project/project/
+project/target/
+project/.bloop/
+build/
+
+.bloop
+.cache
+.project
+.DS_Store
+.idea
