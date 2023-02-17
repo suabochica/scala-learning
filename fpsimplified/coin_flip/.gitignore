@@ -1,8 +1,0 @@
-bin/
-target/
-build/
-
-.cache
-.project
-.DS_Store
-.idea
